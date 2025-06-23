@@ -1,0 +1,180 @@
+openapi: 3.0.4
+info:
+  title: File Reader API
+  description: Send files to the server and receive their content in a structured format.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000 # Still in dev
+tags:
+  - name: file
+    description: Operations related to file reading
+  - name: home
+    description: Allows for home specific services such as geocoding and MLS
+  - name: appliance
+    description: Allows for appliance specific services like getting owner's manuals or serial number lookup
+components:
+  schemas:
+    Form: # can be any valid JSON object
+      type: object
+      description: >
+        A JSON object that specifies which fields to extract from the file, 
+        and which type they should be. Valid values are: string, integer, 
+        float, boolean, datetime, or array[type] of the previous types. 
+        If the type is not specified, it defaults to string, and nested 
+        objects are not supported.
+    HomeForm:
+      type: object
+      description: >
+        Similiar to a Form, with additional types: address and latlon
+    DefaultHomeForm:
+      type: object
+      description: A default home form with fields for address and latlon
+      properties:
+        address:
+          type: string
+          description: The address of the home
+        latlon:
+          type: array
+          items:
+            type: number
+          description: Latitude and longitude coordinates of the home
+        year_built:
+          type: integer
+          description: The year the home was built
+        square_footage:
+          type: integer
+          description: The total square footage of the home
+        bedrooms:
+          type: integer
+          description: The number of bedrooms in the home
+        bathrooms:
+          type: integer
+          description: The number of bathrooms in the home
+        pool:
+          type: boolean
+          description: Whether the home has a pool or not
+        garage:
+          type: boolean
+          description: Whether the home has a garage or not
+    DefaultApplianceForm:
+      type: object
+      description: A default appliance form with fields for serial number and model number
+      properties:
+        serial_number:
+          type: string
+          description: The serial number of the appliance
+        manufacturer:
+          type: string
+          description: The manufacturer of the appliance
+        type:
+          type: string
+          description: The type of the appliance (e.g., refrigerator, washer, dryer)
+paths:
+  /pdf:
+    post:
+      tags:
+        - file
+      summary: Upload a PDF file
+      description: Upload a PDF file to the server and receive its content.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                json:
+                  type: object
+                  properties:
+                    form:
+                      $ref: '#/components/schemas/Form'
+      responses:
+        '200':
+          description: Successful response with file content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: object
+                    description: The extracted content from the PDF file
+        '400':
+          description: Bad request, invalid file or form data
+        '500':
+          description: Internal server error
+  /home:
+    post:
+      tags:
+        - home
+      summary: Upload a home inspection report
+      description: Upload a home inspection report to the server, along with a form, and parse the content into the form. Uses a default home form if no form is provided. Uses external services to fill in missing information if possible.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                json:
+                  type: object
+                  properties:
+                    form:
+                      $ref: '#/components/schemas/HomeForm'
+      responses:
+        '200':
+          description: Successful response with home inspection report content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: object
+                    description: The extracted content from the home inspection report
+        '400':
+          description: Bad request, invalid file or form data
+        '500':
+          description: Internal server error
+  /appliance:
+    post:
+      tags:
+        - appliance
+      summary: Upload a photo of a manufacturer plate on an appliance
+      description: Upload a photo of a manufacturer plate on an appliance, along with a form, and parse the content into the form. Uses a default appliance form if no form is provided. Uses external services to fill in missing information if possible.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                json:
+                  type: object
+                  properties:
+                    form:
+                      $ref: '#/components/schemas/DefaultApplianceForm'
+      responses:
+        '200':
+          description: Successful response with appliance information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: object
+                    description: The extracted content from the appliance photo
+        '400':
+          description: Bad request, invalid file or form data
+        '500':
+          description: Internal server error

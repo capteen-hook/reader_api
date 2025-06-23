@@ -1,0 +1,8 @@
+pydantic
+Flask
+outlines
+python-dotenv
+openai
+mcp[cli]
+uvicorn
+asyncio
