@@ -111,7 +111,7 @@ def process_vision(file_path, form_data):
     ])
     
     results = []
-    for imagename in imagenames
+    for imagename in imagenames:
         try:
             image = Image.open(imagename)
             
