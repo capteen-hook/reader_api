@@ -48,7 +48,7 @@ def convert_pdf_to_images(pdf_path, output_dir, dpi=172, fmt='PNG'):
         pdf_path,
         dpi=dpi,
         fmt=fmt,
-        poppler_path='C:\\Program Files\\Poppler\\poppler-24.08.0\\Library\\bin',
+        poppler_path=os.getenv('POPLER_PATH', None)  # Set Poppler path for windows- should be on the sys PATH on Linux/MacOS
     )
     
     imagenames = []
