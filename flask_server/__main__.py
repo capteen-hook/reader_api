@@ -30,8 +30,10 @@ PORT = int(os.getenv("PORT", 8000))
 client = ollama.Client()
 model = from_ollama(client, os.getenv("MODEL_NAME", "gemma3:4b"))
 
+device = torch.device("cuda")
+dtype = torch.float32
 # it will have to download the model, which might take a while.
-model_kwargs={"device_map": "auto", "torch_dtype": torch.bfloat16}
+model_kwargs={"device_map": "auto", "torch_dtype": dtype}
 processor_kwargs={"device_map": "gpu"}
 tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
 tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
@@ -98,9 +100,6 @@ def process_vision(file_path, form_data):
     prompt = tf_processor.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
-    
-    device = torch.device("cuda")
-    dtype = torch.bfloat16
     
     transform = transforms.Compose([
         transforms.ToTensor(),
