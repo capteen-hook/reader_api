@@ -26,7 +26,7 @@ TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
 PORT = int(os.getenv("PORT", 8000))
 
 client = ollama.Client()
-model = from_ollama(client, "gemma3:4b")
+model = from_ollama(client, os.getenv("MODEL_NAME", "gemma3:4b"))
 
 # it will have to download the model, which might take a while.
 model_kwargs={"device_map": "auto", "torch_dtype": torch.bfloat16}
