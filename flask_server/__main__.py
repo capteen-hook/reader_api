@@ -17,17 +17,18 @@ from flask_server.test_page import homePage
 
 import torchvision.transforms as transforms
 
-# heavyweight model:
-from transformers import LlavaForConditionalGeneration, LlavaProcessor
-model_name="mistral-community/pixtral-12b"
-model_class=LlavaForConditionalGeneration
-processor_class = LlavaProcessor
-
-# lighter model:
-# from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
-# model_name = "Qwen/Qwen2-VL-7B-Instruct"
-# model_class = Qwen2VLForConditionalGeneration
-# processor_class = AutoProcessor
+if os.getenv("LIGHTWEIGHT_MODEL", "True").lower() in ["true", "1", "yes"]:
+    # heavyweight model:
+    from transformers import LlavaForConditionalGeneration, LlavaProcessor
+    model_name="mistral-community/pixtral-12b"
+    model_class=LlavaForConditionalGeneration
+    processor_class = LlavaProcessor
+else:
+    # lighter model:
+    from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+    model_name = "Qwen/Qwen2-VL-7B-Instruct"
+    model_class = Qwen2VLForConditionalGeneration
+    processor_class = AutoProcessor
 
 load_dotenv()
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/v1")
