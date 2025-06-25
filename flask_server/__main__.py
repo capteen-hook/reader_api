@@ -32,7 +32,7 @@ model = from_ollama(client, os.getenv("MODEL_NAME", "gemma3:4b"))
 
 # it will have to download the model, which might take a while.
 model_kwargs={"device_map": "auto", "torch_dtype": torch.bfloat16}
-processor_kwargs={"device_map": "cpu"}
+processor_kwargs={"device_map": "gpu"}
 tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
 tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
 
@@ -99,8 +99,8 @@ def process_vision(file_path, form_data):
         messages, tokenize=False, add_generation_prompt=True
     )
     
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    dtype = torch.bfloat16 if tf_model.dtype == torch.bfloat16 else torch.float32
+    device = torch.device("cuda")
+    dtype = torch.bfloat16
     
     transform = transforms.Compose([
         transforms.ToTensor(),
