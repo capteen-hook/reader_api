@@ -109,7 +109,7 @@ def process_vision(file_path, form_data):
     
     results = []
     for image in images:
-        image_tensor = transform(image).to(model_i.device)
+        image_tensor = transform(image).to("cuda" if torch.cuda.is_available() else "cpu")
         print(result)
         results.append(result)
         
