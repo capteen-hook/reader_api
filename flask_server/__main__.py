@@ -74,13 +74,6 @@ def process_vision(file_path, form_data):
         # file is an image
         images = [Image.open(file_path)]
     
-    # Define a transformation pipeline to convert images to tensors
-    transform = transforms.Compose([
-        transforms.ToTensor(),  # Convert PIL image to tensor
-        transforms.ConvertImageDtype(torch.bfloat16),  # Convert tensor dtype to bfloat16
-    ])
-    
-    
     messages = [
         {
             "role": "user",
@@ -106,11 +99,18 @@ def process_vision(file_path, form_data):
         messages, tokenize=False, add_generation_prompt=True
     )
     
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    dtype = torch.bfloat16 if tf_model.dtype == torch.bfloat16 else torch.float32
+    
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.ConvertImageDtype(dtype),
+    ])
     
     results = []
     for image in images:
-        image_tensor = transform(image).to("cuda" if torch.cuda.is_available() else "cpu")
-        result = page_summary_generator({"text": prompt, "images": image})
+        image_tensor = transform(image).to(device=device, dtype=dtype)
+        result = page_summary_generator({"text": prompt, "images": image_tensor})
         print(result)
         results.append(result)
         
