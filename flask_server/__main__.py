@@ -5,7 +5,7 @@ from PIL import Image
 import requests
 import os
 from dotenv import load_dotenv
-from outlines import from_ollama, Generator
+from outlines import from_ollama, Generator, from_transformers
 from outlines.types import JsonSchema
 import ollama
 from pdf2image import convert_from_path
@@ -34,7 +34,7 @@ processor_kwargs={"device_map": "cpu"}
 tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
 tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
 
-model_i = outlines.from_transformers(tf_model, tf_processor)
+model_i = from_transformers(tf_model, tf_processor)
 
 def convert_pdf_to_images(pdf_path, output_dir=None, dpi=120, fmt='PNG'):
     # Convert PDF to list of images
