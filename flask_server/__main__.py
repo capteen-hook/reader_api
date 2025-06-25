@@ -9,18 +9,20 @@ from outlines import from_ollama, Generator
 from outlines.types import JsonSchema
 import ollama
 from pdf2image import convert_from_path
+import torch
 
 from flask_server.prompts import (fill_form, fill_home_form, fill_appliance_form, default_home_form, default_appliance_form, example_schema)
 from flask_server.test_page import homePage
 
 from transformers import LlavaForConditionalGeneration, LlavaProcessor
+
 model_name="mistral-community/pixtral-12b"
 model_class=LlavaForConditionalGeneration
 processor_class = LlavaProcessor
 
 load_dotenv()
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://host.docker.internal:11434/v1")
-TIKA_URL = os.getenv("TIKA_URL", "http://tika:9998/tika")
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/v1")
+TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
 PORT = int(os.getenv("PORT", 8000))
 
 client = ollama.Client()
@@ -29,8 +31,8 @@ model = from_ollama(client, "gemma3:4b")
 # it will have to download the model, which might take a while.
 model_kwargs={"device_map": "auto", "torch_dtype": torch.bfloat16}
 processor_kwargs={"device_map": "cpu"}
-tf_model = model_class.from_pretrained(model_name, **model_kwargs)
-tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs)
+tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
+tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
 
 model_i = outlines.from_transformers(tf_model, tf_processor)
 
@@ -98,7 +100,7 @@ def process_vision(file_path, form_data):
         messages, tokenize=False, add_generation_prompt=True
     )
     
-    page_summary_generator = Generator(model, JsonSchema(form_data))
+    page_summary_generator = Generator(model_i, JsonSchema(form_data))
     
     results = []
     for image in images:
