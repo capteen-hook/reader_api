@@ -109,7 +109,7 @@ def process_vision(file_path, form_data):
     
     results = []
     for image in images:
-        image_tensor = torch.tensor(image).to("cuda" if torch.cuda.is_available() else "cpu")
+        image_tensor = transform(image).to("cuda" if torch.cuda.is_available() else "cpu")
         result = page_summary_generator({"text": prompt, "images": image})
         print(result)
         results.append(result)
