@@ -127,8 +127,8 @@ def process_plaintext(text, form_data):
     return result
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = './uploads'
-app.config['PROCESSING_FOLDER'] = './processing'
+app.config['UPLOAD_FOLDER'] = os.getenv('WORK_DIR', './work_dir') + '/uploads'
+app.config['PROCESSING_FOLDER'] = os.getenv('WORK_DIR', './work_dir') + '/processing'
 
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
