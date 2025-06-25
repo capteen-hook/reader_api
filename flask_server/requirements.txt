@@ -7,4 +7,5 @@ numpy
 ollama
 pdf2image
 transformers
-torche
+torch
+accelerate
