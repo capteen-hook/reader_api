@@ -18,16 +18,16 @@ from flask_server.test_page import homePage
 import torchvision.transforms as transforms
 
 # heavyweight model:
-# from transformers import LlavaForConditionalGeneration, LlavaProcessor
-# model_name="mistral-community/pixtral-12b"
-# model_class=LlavaForConditionalGeneration
-# processor_class = LlavaProcessor
+from transformers import LlavaForConditionalGeneration, LlavaProcessor
+model_name="mistral-community/pixtral-12b"
+model_class=LlavaForConditionalGeneration
+processor_class = LlavaProcessor
 
 # lighter model:
-from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
-model_name = "Qwen/Qwen2-VL-7B-Instruct"
-model_class = Qwen2VLForConditionalGeneration
-processor_class = AutoProcessor
+# from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+# model_name = "Qwen/Qwen2-VL-7B-Instruct"
+# model_class = Qwen2VLForConditionalGeneration
+# processor_class = AutoProcessor
 
 load_dotenv()
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/v1")
@@ -128,7 +128,7 @@ def process_vision(file_path, form_data):
             results.append(result)
             
             # Free up memory
-            del image_tensor
+            #del image_tensor
             del image
             torch.cuda.empty_cache()
             gc.collect()
