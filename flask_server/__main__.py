@@ -41,7 +41,7 @@ tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, c
 
 model_i = from_transformers(tf_model, tf_processor)
 
-def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
+def convert_pdf_to_images(pdf_path, output_dir, dpi=172, fmt='PNG'):
     # Convert PDF to list of images
     print(f"Converting PDF {pdf_path} to images in {output_dir}")
     images = convert_from_path(
@@ -115,8 +115,9 @@ def process_vision(file_path, form_data):
         try:
             image = Image.open(imagename)
             
-            image_tensor = transform(image).to(device=device, dtype=dtype)
-            result = page_summary_generator({"text": prompt, "images": image_tensor})
+            # image_tensor = transform(image).to(device=device, dtype=dtype)
+            # result = page_summary_generator({"text": prompt, "images": image_tensor})
+            result = page_summary_generator({"text": prompt, "images": [image]})
             print(result)
             results.append(result)
             
