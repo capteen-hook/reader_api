@@ -1,6 +1,8 @@
 services:
   flask_server:
-    build: ./flask_server
+    build:
+      context: ./flask_server
+      dockerfile: Dockerfile
     container_name: flask_server
     depends_on:
       - tika
@@ -20,7 +22,7 @@ services:
         target: /tika-config.xml
     restart: unless-stopped
     networks:
-      - opensearch-net
+      - tika_network
       
 configs:
   tika_config_3:

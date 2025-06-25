@@ -1,8 +1,10 @@
-pydantic
 Flask
 outlines
 python-dotenv
-openai
-mcp[cli]
 uvicorn
-asyncio
+Pillow
+numpy
+ollama
+pdf2image
+transformers
+torche
