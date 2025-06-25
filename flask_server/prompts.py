@@ -83,7 +83,7 @@ default_appliance_form = """{
         "type": {
             "type": "string"
         }
-    },
+    }
 }"""
 
 example_schema = """{
