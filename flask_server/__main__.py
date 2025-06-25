@@ -75,7 +75,7 @@ def process_vision(file_path, form_data):
 
     if file_path.lower().endswith('.pdf'):
         # conver to list of images
-        imagenamess = convert_pdf_to_images(file_path, output_dir=app.config['PROCESSING_FOLDER'])
+        imagenames = convert_pdf_to_images(file_path, output_dir=app.config['PROCESSING_FOLDER'])
     else:
         # file is an image
         imagenames = [file_path]
