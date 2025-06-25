@@ -10,6 +10,7 @@ from outlines.types import JsonSchema
 import ollama
 from pdf2image import convert_from_path
 import torch
+import gc
 
 from flask_server.prompts import (fill_form, fill_home_form, fill_appliance_form, default_home_form, default_appliance_form, example_schema)
 from flask_server.test_page import homePage
@@ -40,7 +41,7 @@ tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, c
 
 model_i = from_transformers(tf_model, tf_processor)
 
-def convert_pdf_to_images(pdf_path, output_dir=None, dpi=120, fmt='PNG'):
+def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
     # Convert PDF to list of images
     print(f"Converting PDF {pdf_path} to images in {output_dir}")
     images = convert_from_path(
@@ -49,14 +50,17 @@ def convert_pdf_to_images(pdf_path, output_dir=None, dpi=120, fmt='PNG'):
         fmt=fmt,
         poppler_path='C:\\Program Files\\Poppler\\poppler-24.08.0\\Library\\bin',
     )
+    
+    imagenames = []
+    
+    os.makedirs(output_dir, exist_ok=True)
+    for i, image in enumerate(images):
+        path = os.path.join(output_dir, f'page_{i+1}.{fmt.lower()}')
+        image.save(path)
+        imagenames.append(path)
 
-    # Optionally save images
-    if output_dir:
-        os.makedirs(output_dir, exist_ok=True)
-        for i, image in enumerate(images):
-            image.save(os.path.join(output_dir, f'page_{i+1}.{fmt.lower()}'))
-
-    return images
+    del images  # Free up memory
+    return imagenames
 
 def process_vision(file_path, form_data):
     """
@@ -71,10 +75,10 @@ def process_vision(file_path, form_data):
 
     if file_path.lower().endswith('.pdf'):
         # conver to list of images
-        images = convert_pdf_to_images(file_path, output_dir=app.config['PROCESSING_FOLDER'])
+        imagenamess = convert_pdf_to_images(file_path, output_dir=app.config['PROCESSING_FOLDER'])
     else:
         # file is an image
-        images = [Image.open(file_path)]
+        imagenames = [file_path]
     
     messages = [
         {
@@ -107,11 +111,20 @@ def process_vision(file_path, form_data):
     ])
     
     results = []
-    for image in images:
-        image_tensor = transform(image).to(device=device, dtype=dtype)
-        result = page_summary_generator({"text": prompt, "images": image_tensor})
-        print(result)
-        results.append(result)
+    for imagename in imagenames
+        try:
+            image = Image.open(imagename)
+            
+            image_tensor = transform(image).to(device=device, dtype=dtype)
+            result = page_summary_generator({"text": prompt, "images": image_tensor})
+            print(result)
+            results.append(result)
+            
+            # Free up memory
+            del image_tensor
+            del image
+            torch.cuda.empty_cache()
+            gc.collect()
         
     print("Processed results:", results)
         
