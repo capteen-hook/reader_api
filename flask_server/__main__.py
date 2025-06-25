@@ -15,6 +15,8 @@ from flask_server.prompts import (fill_form, fill_home_form, fill_appliance_form
 from flask_server.test_page import homePage
 
 from transformers import LlavaForConditionalGeneration, LlavaProcessor
+import torchvision.transforms as transforms
+
 
 model_name="mistral-community/pixtral-12b"
 model_class=LlavaForConditionalGeneration
@@ -71,7 +73,14 @@ def process_vision(file_path, form_data):
     else:
         # file is an image
         images = [Image.open(file_path)]
-        
+    
+    # Define a transformation pipeline to convert images to tensors
+    transform = transforms.Compose([
+        transforms.ToTensor(),  # Convert PIL image to tensor
+        transforms.ConvertImageDtype(torch.bfloat16),  # Convert tensor dtype to bfloat16
+    ])
+    
+    
     messages = [
         {
             "role": "user",
@@ -100,8 +109,7 @@ def process_vision(file_path, form_data):
     
     results = []
     for image in images:
-        image_tensor = torch.tensor(image).to(torch.bfloat16).to("cuda")  # Ensure dtype and device match
-        result = page_summary_generator({"text": prompt, "images": image})
+        image_tensor = transform(image).to(model_i.device)
         print(result)
         results.append(result)
         
