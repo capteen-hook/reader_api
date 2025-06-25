@@ -51,7 +51,7 @@ model_i = from_transformers(tf_model, tf_processor)
 def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
     # Convert PDF to list of images
     print(f"Converting PDF {pdf_path} to images in {output_dir}")
-    if os.getenv('POPPLER_PATH', None) is None or not os.getenv('POPPLER_PATH', '') == '':
+    if os.getenv('POPPLER_PATH', None) is None or os.getenv('POPPLER_PATH', '') == '':
         images = convert_from_path(
             pdf_path,
             dpi=dpi,
