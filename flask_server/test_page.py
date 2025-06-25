@@ -24,7 +24,7 @@ def homePage(default_home_form, default_appliance_form, test_text):
                     <button onclick="showTab('tab6')">Process Image for OCR</button>
                 </div>
                 <div id="tab1" style="display:block;">
-                    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
                     <h2>Upload File</h2>
                     <input type="file" name="file" required>
                     <br>
@@ -32,7 +32,7 @@ def homePage(default_home_form, default_appliance_form, test_text):
                     </form>
                 </div>
                 <div id="tab2" style="display:none;">
-                    <form id="processPdfForm" action="/process/pdf" method="post">
+                    <form id="processPdfForm" action="/process/pdf" method="post" class="process-form">
                     <h2>Process PDF</h2>
                     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
                     <textarea name="form" rows="10" cols="50" placeholder="Enter form data in JSON format">""" + default_home_form + """</textarea>
@@ -41,7 +41,7 @@ def homePage(default_home_form, default_appliance_form, test_text):
                     </form>
                 </div>
                 <div id="tab3" style="display:none;">
-                    <form id="processHomeForm" action="/process/home" method="post">
+                    <form id="processHomeForm" action="/process/home" method="post" class="process-form">
                     <h2>Process Home Report</h2>
                     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
                     <textarea name="form" rows="10" cols="50" placeholder="Enter form data in JSON format">""" + default_home_form + """</textarea>
@@ -50,7 +50,7 @@ def homePage(default_home_form, default_appliance_form, test_text):
                     </form>
                 </div>
                 <div id="tab4" style="display:none;">
-                    <form id="processApplianceForm" action="/process/appliance" method="post">
+                    <form id="processApplianceForm" action="/process/appliance" method="post" class="process-form">
                     <h2>Process Appliance Photo</h2>
                     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
                     <textarea name="form" rows="10" cols="50" placeholder="Enter form data in JSON format">""" + default_appliance_form + """</textarea>
@@ -59,7 +59,7 @@ def homePage(default_home_form, default_appliance_form, test_text):
                     </form>
                 </div>
                 <div id="tab5" style="display:none;">
-                    <form id="processTxtForm" action="/process/txt" method="post">
+                    <form id="processTxtForm" action="/process/txt" method="post" class="process-form">
                     <h2>Process Text File</h2>
                     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
                     <textarea name="form" rows="10" cols="50" placeholder="Enter form data in JSON format">""" + test_text + """</textarea>
@@ -68,7 +68,7 @@ def homePage(default_home_form, default_appliance_form, test_text):
                     </form>
                 </div>
                 <div id="tab6" style="display:none;">
-                    <form id="processImageForm" action="/ocr" method="post">
+                    <form id="processImageForm" action="/ocr" method="post" class="process-form">
                     <h2>Process Image for OCR</h2>
                     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
                     <br>
@@ -76,7 +76,7 @@ def homePage(default_home_form, default_appliance_form, test_text):
                     </form>
                 </div>
                 <script>
-                    document.querySelectorAll('form').forEach(form => {
+                    document.querySelectorAll('.process-form').forEach(form => {
                         form.addEventListener('submit', function(event) {
                             event.preventDefault();
                             const formData = new FormData(this);
@@ -101,6 +101,30 @@ def homePage(default_home_form, default_appliance_form, test_text):
                                     'Content-Type': 'application/json'
                                 },
                                 body: JSON.stringify(jsonData)
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                alert(JSON.stringify(data, null, 2));
+                            })
+                            .catch(error => {
+                                alert('Error: ' + error.message);
+                            });
+                        });
+                    });
+                    
+                    document.getElementById('uploadForm').addEventListener('submit', function(event) {
+                        form.addEventListener('submit', function(event) {
+                            event.preventDefault();
+                            const formData = new FormData(this);
+
+                            fetch(this.action, {
+                                method: 'POST',
+                                body: formData // Send the FormData directly
                             })
                             .then(response => {
                                 if (!response.ok) {
