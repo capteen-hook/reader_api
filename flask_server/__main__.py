@@ -125,6 +125,9 @@ def process_vision(file_path, form_data):
             del image
             torch.cuda.empty_cache()
             gc.collect()
+        except Exception as e:
+            print(f"Error processing image {imagename}: {e}")
+            results.append({"error": str(e)})
         
     print("Processed results:", results)
         
