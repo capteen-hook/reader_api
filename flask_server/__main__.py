@@ -79,12 +79,7 @@ def process_vision(file_path, form_data):
                 # The text you're passing to the model --
                 # this is where you do your standard prompting.
                 {"type": "text", "text": f"""
-                    Describe the page in a way that is easy for a PhD student to understand.
-
-                    Return the information in the following JSON schema:
-                    {form_data}
-
-                    Here is the page:
+                    {fill_form("Use the image", form=form_data)}
                     """
                 },
 
@@ -95,15 +90,17 @@ def process_vision(file_path, form_data):
         }
     ]
     
+    page_summary_generator = Generator(model_i, JsonSchema(form_data))
+    
     # Convert the messages to the final prompt
     prompt = tf_processor.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
     
-    page_summary_generator = Generator(model_i, JsonSchema(form_data))
     
     results = []
     for image in images:
+        image_tensor = torch.tensor(image).to(torch.bfloat16).to("cuda")  # Ensure dtype and device match
         result = page_summary_generator({"text": prompt, "images": image})
         print(result)
         results.append(result)
