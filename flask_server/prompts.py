@@ -106,8 +106,3 @@ example_schema = """{
     "title": "Structured Response",
     "type": "object"
 }"""
-
-
-curl -X POST http://localhost:8000/process/tika \
-     -H "Content-Type: application/json" \
-     -d '{"filename": "report_easy.pdf", "form": "{"$defs": {"Status": {"enum": ["success", "failure"],"title": "Status","type": "string"}},"properties": {"status": {"$ref": "#/$defs/Status"},"response": {"type": "string"}},"required": ["status", "response"],"title": "Structured Response","type": "object"}"}'
