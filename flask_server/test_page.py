@@ -70,7 +70,7 @@ function showTab(tabId) {
 script_form = """
 document.querySelectorAll('.process-form').forEach(form => {
     form.addEventListener('submit', function(event) {
-        event.preventDefault();
+        event.preventDefault(); // Prevent default form submission
         const formData = new FormData(this);
         const jsonData = {};
 
@@ -90,7 +90,7 @@ document.querySelectorAll('.process-form').forEach(form => {
         fetch(this.action, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json' // Set content type to JSON
+                'Content-Type': 'application/json' // Explicitly set content type
             },
             body: JSON.stringify(jsonData) // Send JSON object as request body
         })
