@@ -322,9 +322,14 @@ def tika_process():
         if not os.path.exists(file_path):
             return jsonify({"error": "File not found"}), 404
         
-        headers = {'Content-Type': 'application/pdf'}
+        headers = {
+            'Content-Type': 'application/pdf',
+            'Accept': 'text/plain'
+        }
+        
         with open(file_path, 'rb') as f:
-            response = requests.put(TIKA_URL, data=f, headers=headers)
+            pdf_data = f.read()
+        response = requests.put(url, data=pdf_data, headers=headers)
         
         if response.status_code != 200:
             return jsonify({"error": "Tika processing failed"}), 500
