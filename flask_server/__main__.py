@@ -307,6 +307,34 @@ def clear_uploads():
     except Exception as e:
         print(f"Error clearing uploads: {e}")
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/tika', methods=['POST'])
+def tika_process():
+    # takes a file name -> ocr with tika -> process plain text
+    try:
+        filename = request.json.get('filename')
+        form_data = request.json.get('form')
+        
+        if not filename or not form_data:
+            return jsonify({"error": "Invalid filename or form data"}), 400
+        
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        if not os.path.exists(file_path):
+            return jsonify({"error": "File not found"}), 404
+        
+        headers = {'Content-Type': 'application/pdf'}
+        with open(file_path, 'rb') as f:
+            response = requests.put(TIKA_URL, data=f, headers=headers)
+        
+        if response.status_code != 200:
+            return jsonify({"error": "Tika processing failed"}), 500
+        
+        content = process_plaintext(response.text, form_data)
+        
+        return jsonify(content), 200
+    except Exception as e:
+        print(f"Error processing with Tika: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
