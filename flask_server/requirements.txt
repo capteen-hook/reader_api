@@ -11,3 +11,4 @@ torch
 accelerate
 datasets
 torchvision
+beautifulsoup4

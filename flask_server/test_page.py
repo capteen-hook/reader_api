@@ -6,9 +6,6 @@ boilerplate = """
 <html lang="en">
 <head>
     <title>Flask Server</title>
-    <script>
-    {javascript_code}
-    </script>
     <style>
     {css_code}
     </style>
@@ -16,6 +13,9 @@ boilerplate = """
 <body>
     {body_content}
 </body>
+<script>
+{javascript_code}
+</script>
 """
 
 tab_container = """
@@ -38,7 +38,7 @@ process_form = """
     <h2>{tab_name}</h2>
     <form class="process-form" action="{action_url}" method="post">
     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
-    <textarea name="form" rows="10" cols="50" placeholder="Enter form data in JSON format">{form_data}</textarea>
+    <textarea name="form" rows="10" cols="50" placeholder="Enter form data in JSON format" style="white-space: pre-wrap;">{form_data}</textarea>
     <br>
     <input type="submit" value="Process File">
     </form>
@@ -54,6 +54,28 @@ upload_form = """
     <input type="file" name="file" required>
     <br>
     <input type="submit" value="Upload File">
+    </form>
+</div>
+"""
+
+# this doesnt need a form field- just a filename
+tika_process = """
+<div id="tab7" style="display:none;">
+    <h2>Tika OCR</h2>
+    <form class="process-form" action="/process/tika" method="post">
+    <input type="text" name="filename" placeholder="Enter uploaded filename" required>
+    <br>
+    <input type="submit" value="Process File with Tika OCR">
+    </form>
+</div>
+"""
+
+# this just sends a get request to clear the uploads
+clear_uploads = """
+<div id="tab8" style="display:none;">
+    <h2>Clear Uploads</h2>
+    <form action="/clear" method="get">
+    <input type="submit" value="Clear Uploads">
     </form>
 </div>
 """
@@ -86,7 +108,7 @@ document.querySelectorAll('.process-form').forEach(form => {
                 jsonData[key] = value; // Add other fields like filename
             }
         });
-
+        console.log('Sending JSON data:', jsonData); // Log the JSON data for debugging
         fetch(this.action, {
             method: 'POST',
             headers: {
@@ -138,9 +160,13 @@ document.getElementById('uploadForm').addEventListener('submit', function(event)
 
 
 def homePage(default_home_form, default_appliance_form, default_form_data):
-    default_home_form = html.escape(default_home_form)
-    default_appliance_form = html.escape(default_appliance_form)
-    default_form_data = html.escape(default_form_data)
+    # default_home_form = html.escape(default_home_form)
+    # default_appliance_form = html.escape(default_appliance_form)
+    # default_form_data = html.escape(default_form_data)
+    # parse the json strings to ensure they are displayed correctly in the HTML
+    default_home_form = json.dumps(json.loads(default_home_form), indent=4)
+    default_appliance_form = json.dumps(json.loads(default_appliance_form), indent=4)
+    default_form_data = json.dumps(json.loads(default_form_data), indent=4)
     
     proccess_endpoint = [
         {
@@ -172,12 +198,6 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
             "tab_name": "Process plain text",
             "action_url": "/process/text",
             "form_data": default_form_data,
-        },
-        {
-            "tab_id": "tab7",
-            "tab_name": "Process OCR",
-            "action_url": "/process/tika",
-            "form_data": default_form_data,
         }
     ]
     
@@ -185,10 +205,20 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
         {
             "tab_id": "tab1",
             "tab_name": "Upload File",
-            "action_url": "/upload",
-            "form_data": "",
+            "action_url": "/upload"
         },
-    ] + proccess_endpoint
+    ] + proccess_endpoint + [
+        {
+            "tab_id": "tab7",
+            "tab_name": "Tika OCR",
+            "action_url": "/process/tika"
+        },
+        {
+            "tab_id": "tab8",
+            "tab_name": "Clear Uploads",
+            "action_url": "/clear"
+        }
+    ]
     
     tab_buttons = "".join(
         tab_button.format(tab_id=tab["tab_id"], tab_name=tab["tab_name"]) for tab in tabs_b_source
@@ -200,11 +230,11 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
             tab_id=tab["tab_id"],
             tab_name=tab["tab_name"],
             action_url=tab["action_url"],
-            form_data=json.dumps(tab["form_data"], indent=4)
+            form_data=tab["form_data"] if "form_data" in tab else ""
         ) for tab in proccess_endpoint
     )
     
-    tabs_all = upload_form + tabs
+    tabs_all = upload_form + tabs + tika_process + clear_uploads
     
     body_content = tab_container.format(tab_buttons=tab_buttons, tabs=tabs_all)
     javascript_code = script_show_tab + script_form + script_file_upload
