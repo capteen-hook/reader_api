@@ -329,7 +329,7 @@ def tika_process():
         
         with open(file_path, 'rb') as f:
             pdf_data = f.read()
-        response = requests.put(url, data=pdf_data, headers=headers)
+        response = requests.put(TIKA_URL, data=pdf_data, headers=headers)
         
         if response.status_code != 200:
             return jsonify({"error": "Tika processing failed"}), 500
