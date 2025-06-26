@@ -13,7 +13,7 @@ import json
 
 # from flask_server.transformer_vision import process_vision
 from flask_server.web_search import search_duckduckgo
-from flask_server.prompts import (fill_form, fill_home_form, fill_home_form_forward, fill_home_form_forward, fill_appliance_form, default_home_form, default_appliance_form, example_schema)
+from flask_server.prompts import (fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema)
 from flask_server.test_page import homePage
 
 load_dotenv()
