@@ -77,22 +77,22 @@ document.querySelectorAll('.process-form').forEach(form => {
         formData.forEach((value, key) => {
             if (key === 'form') {
                 try {
-                    jsonData[key] = JSON.parse(value);
+                    jsonData[key] = JSON.parse(value); // Parse JSON from the form field
                 } catch (e) {
                     alert('Invalid JSON format in form data');
                     return;
                 }
             } else {
-                jsonData[key] = value;
+                jsonData[key] = value; // Add other fields like filename
             }
         });
 
         fetch(this.action, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json' // Set content type to JSON
             },
-            body: JSON.stringify(jsonData)
+            body: JSON.stringify(jsonData) // Send JSON object as request body
         })
         .then(response => {
             if (!response.ok) {
@@ -101,7 +101,7 @@ document.querySelectorAll('.process-form').forEach(form => {
             return response.json();
         })
         .then(data => {
-            alert(JSON.stringify(data, null, 2));
+            alert(JSON.stringify(data, null, 2)); // Display response data
         })
         .catch(error => {
             alert('Error: ' + error.message);
