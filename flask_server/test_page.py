@@ -172,6 +172,12 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
             "tab_name": "Process plain text",
             "action_url": "/process/text",
             "form_data": default_form_data,
+        },
+        {
+            "tab_id": "tab7",
+            "tab_name": "Process OCR",
+            "action_url": "/process/tika",
+            "form_data": default_form_data,
         }
     ]
     

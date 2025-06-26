@@ -308,7 +308,7 @@ def clear_uploads():
         print(f"Error clearing uploads: {e}")
         return jsonify({"error": str(e)}), 500
     
-@app.route('/tika', methods=['POST'])
+@app.route('/process/tika', methods=['POST'])
 def tika_process():
     # takes a file name -> ocr with tika -> process plain text
     try:
