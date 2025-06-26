@@ -19,4 +19,4 @@ def search_duckduckgo(query):
     # Print the text content of each matching tag
     text_results = "".join('Search Result:\n' + result.get_text(strip=True) + '\n\n' for result in results)
         
-    return text_resultsq
+    return text_results
