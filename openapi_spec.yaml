@@ -11,6 +11,11 @@ tags:
   - name: processing
     description: Operations related to processing uploaded files
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Form:
       type: object
@@ -93,6 +98,8 @@ paths:
         - file
       summary: Upload a file
       description: Upload a file to the server. Returns the filename for later processing.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -124,6 +131,8 @@ paths:
         - processing
       summary: Process a text file
       description: Process a previously uploaded text file and receive its content in a structured format.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -153,12 +162,49 @@ paths:
           description: File not found
         '500':
           description: Internal server error
+  /process/text:
+    post:
+      tags:
+        - processing
+      summary: Process a plain text request
+      description: Process a plain text request and receive its content in a structured format. This route is useful for quick text processing without file uploads.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: The plain text to process
+                form:
+                  $ref: '#/components/schemas/Form'
+      responses:
+        '200':
+          description: Successful response with processed text content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: object
+                    description: The extracted content from the plain text
+        '400':
+          description: Bad request, invalid text or form data
+        '500':
+          description: Internal server error
   /process/ocr:
     post:
       tags:
         - processing
       summary: Process an image or PDF file for OCR
       description: Process a previously uploaded file for OCR. Returns the raw text content, unformatted.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -192,6 +238,8 @@ paths:
         - processing
       summary: Process a PDF file
       description: Process a previously uploaded PDF file and receive its content. This route does the analysis in one shot, so may be less accurate.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -227,6 +275,8 @@ paths:
         - processing
       summary: Process a home inspection report
       description: Process a previously uploaded home inspection report, along with a form, and parse the content into the form. Uses a default home form if no form is provided. Uses external services to fill in missing information if possible.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -262,6 +312,8 @@ paths:
         - processing
       summary: Process a photo of a manufacturer plate on an appliance
       description: Process a previously uploaded photo of a manufacturer plate on an appliance, along with a form, and parse the content into the form. Uses a default appliance form if no form is provided. Uses external services to fill in missing information if possible.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -289,5 +341,26 @@ paths:
           description: Bad request, invalid filename or form data
         '404':
           description: File not found
+        '500':
+          description: Internal server error
+  /clear:
+    post:
+      tags:
+        - file
+      summary: Manually clear the uploaded files
+      description: Clear all uploaded files from the server. This is useful for testing and development purposes.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully cleared uploaded files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Confirmation message that files have been cleared
         '500':
           description: Internal server error

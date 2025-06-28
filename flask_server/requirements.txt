@@ -12,3 +12,4 @@ accelerate
 datasets
 torchvision
 beautifulsoup4
+pyjwt

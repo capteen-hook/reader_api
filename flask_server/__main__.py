@@ -10,6 +10,8 @@ import ollama
 import gc
 from bs4 import BeautifulSoup
 import json
+import jwt 
+from functools import wraps
 
 # from flask_server.transformer_vision import process_vision
 from flask_server.web_search import search_duckduckgo
@@ -36,7 +38,7 @@ os.makedirs(app.config['PROCESSING_FOLDER'], exist_ok=True)
 def home_loop(text, schema):
     
     # home inspection reports can be quite long, so we need to split them into chunks
-    chunksize = 2000
+    chunksize = 3000
     overlap = 100
     chunks = [text[i:i + chunksize] for i in range(0, len(text), chunksize - overlap)]
     results = []
@@ -53,7 +55,6 @@ def home_loop(text, schema):
                 result[key] = value
         
         print("Result from chunk:", result)
-        
         results.append(result)
         final_res = result
         
@@ -141,6 +142,35 @@ def validate_form(form_data, default=example_schema):
         print(f"Error validating form data: {e}")
         raise ValueError("Invalid form data")
         
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key") 
+
+def verify_jwt(token):
+    try:
+        # Decode the JWT token
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return decoded
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+@app.before_request
+def verify_api_key():
+    # root path is unprotected
+    if request.path == '/' and request.method == 'GET' and len(request.path) == 1:
+        return
+    token = request.headers.get("Authorization")
+    if not token:
+        return jsonify({"error": "Missing Authorization header"}), 401
+    
+    # Remove "Bearer " prefix if present
+    if token.startswith("Bearer "):
+        token = token.split("Bearer ")[1]
+    print(f"Token: {token}")
+    decoded = verify_jwt(token)
+    if not decoded:
+        print("Invalid or expired token")
+        return jsonify({"error": "Invalid or expired token"}), 401
 
 @app.route('/upload', methods=['POST'])
 def upload_file():

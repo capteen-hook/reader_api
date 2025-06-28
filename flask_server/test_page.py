@@ -1,5 +1,8 @@
 import json
 import html
+import requests
+import os
+from dotenv import load_dotenv
 
 boilerplate = """
 <!DOCTYPE html>
@@ -10,7 +13,8 @@ boilerplate = """
     {css_code}
     </style>
 </head>
-<body>
+<body>  
+    {ollama_active}
     {body_content}
 </body>
 <script>
@@ -38,6 +42,7 @@ process_form = """
     <h2>{tab_name}</h2>
     <form class="process-form" action="{action_url}" method="post">
     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
+    <input type="text" name="auth" placeholder="Enter authentication token" required>
     <textarea name="form" rows="10" cols="50" placeholder="Enter form data in JSON format" style="white-space: pre-wrap;">{form_data}</textarea>
     <br>
     <input type="submit" value="Process File">
@@ -52,6 +57,7 @@ upload_form = """
     <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
     <h2>Upload File</h2>
     <input type="file" name="file" required>
+    <input type="text" name="auth" placeholder="Enter authentication token" required>
     <br>
     <input type="submit" value="Upload File">
     </form>
@@ -64,6 +70,7 @@ tika_process = """
     <h2>Tika OCR</h2>
     <form class="process-form" action="/process/tika" method="post">
     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
+    <input type="text" name="auth" placeholder="Enter authentication token" required>
     <br>
     <input type="submit" value="Process File with Tika OCR">
     </form>
@@ -74,7 +81,8 @@ tika_process = """
 clear_uploads = """
 <div id="tab8" style="display:none;">
     <h2>Clear Uploads</h2>
-    <form action="/clear" method="get">
+    <form action="/clear" method="get" id="clearUploadsForm">
+    <input type="text" name="auth" placeholder="Enter authentication token" required>
     <input type="submit" value="Clear Uploads">
     </form>
 </div>
@@ -112,7 +120,8 @@ document.querySelectorAll('.process-form').forEach(form => {
         fetch(this.action, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json' // Explicitly set content type
+                'Content-Type': 'application/json', // Explicitly set content type
+                'Authorization': 'Bearer ' + jsonData.auth // Include auth token in headers                
             },
             body: JSON.stringify(jsonData) // Send JSON object as request body
         })
@@ -134,29 +143,91 @@ document.querySelectorAll('.process-form').forEach(form => {
 
 script_file_upload = """
 document.getElementById('uploadForm').addEventListener('submit', function(event) {
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const formData = new FormData(this);
+    event.preventDefault(); // Prevent the default form submission
+    const formData = new FormData(this);
 
-        fetch(this.action, {
-            method: 'POST',
-            body: formData // Send the FormData directly
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert(JSON.stringify(data, null, 2));
-        })
-        .catch(error => {
-            alert('Error: ' + error.message);
-        });
+    // Retrieve the auth token from the form data
+    const authToken = formData.get('auth');
+    if (!authToken) {
+        alert('Authorization token is missing!');
+        return;
+    }
+
+    fetch(this.action, {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + authToken // Include auth token in headers
+        },
+        body: formData // Send the FormData directly
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert(JSON.stringify(data, null, 2));
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
     });
 });
 """
+
+script_clear_uploads = """
+document.getElementById('clearUploadsForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission
+    const formData = new FormData(this);
+    // Retrieve the auth token from the form data
+    const authToken = formData.get('auth');
+    if (!authToken) {
+        alert('Authorization token is missing!');
+        return;
+    }
+    fetch(this.action, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + authToken // Include auth token in headers
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert(JSON.stringify(data, null, 2));
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    });
+});
+"""
+
+def ollama_active_element(ollama_active):
+    if ollama_active:
+        return '<div style="color: green; font-weight: bold;">Ollama is active</div>'
+    else:
+        return '<div style="color: red; font-weight: bold;">Ollama is not active</div>'
+    
+def try_ollama():
+        
+    load_dotenv()
+    OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/v1").split("/v1")[0]  # Ensure we only use the base URL
+    print(f"Checking Ollama at {OLLAMA_URL}")
+    
+    try:
+        response = requests.get(f"{OLLAMA_URL}")
+        if response.status_code == 200:
+            return True
+        else:
+            print(f"Ollama health check failed with status code: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"Error checking Ollama health: {e}")
+        return False
 
 
 def homePage(default_home_form, default_appliance_form, default_form_data):
@@ -167,6 +238,9 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
     default_home_form = json.dumps(json.loads(default_home_form), indent=4)
     default_appliance_form = json.dumps(json.loads(default_appliance_form), indent=4)
     default_form_data = json.dumps(json.loads(default_form_data), indent=4)
+    
+    # ollama health check:
+    ollama_active = try_ollama()
     
     proccess_endpoint = [
         {
@@ -237,10 +311,11 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
     tabs_all = upload_form + tabs + tika_process + clear_uploads
     
     body_content = tab_container.format(tab_buttons=tab_buttons, tabs=tabs_all)
-    javascript_code = script_show_tab + script_form + script_file_upload
+    javascript_code = script_show_tab + script_form + script_file_upload + script_clear_uploads
     css_code = ""
     
     return boilerplate.format(
+        ollama_active=ollama_active_element(ollama_active),
         javascript_code=javascript_code,
         css_code=css_code,
         body_content=body_content
