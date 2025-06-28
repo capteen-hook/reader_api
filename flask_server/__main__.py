@@ -62,14 +62,14 @@ def home_loop(text, schema):
     print("All results:", results)
     
     # do a web search for the address if it exists
-    address = final_res.get('address', '')
-    if address:
-        print("Performing web search for address:", address)
-        search_results = search_duckduckgo(address)
+    # address = final_res.get('address', '')
+    # if address:
+    #     print("Performing web search for address:", address)
+    #     search_results = search_duckduckgo(address)
         
-        final_res = process_plaintext(search_results, schema, fill_home_form_websearch(search_results, schema, final_res))
+    #     final_res = process_plaintext(search_results, schema, fill_home_form_websearch(search_results, schema, final_res))
         
-        print("Final result after web search:", final_res)
+    #     print("Final result after web search:", final_res)
         
     return final_res
 
