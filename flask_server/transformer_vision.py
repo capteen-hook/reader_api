@@ -3,6 +3,12 @@ import torch
 import torchvision.transforms as transforms
 from pdf2image import convert_from_path
 from outlines import Generator, from_transformers
+import os
+import gc
+from flask_server.prompts import fill_form
+from dotenv import load_dotenv
+
+load_dotenv()
 
 if os.getenv("LIGHTWEIGHT_MODEL", "True").lower() in ["true", "1", "yes"]:
     # heavyweight model:
