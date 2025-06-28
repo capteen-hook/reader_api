@@ -73,7 +73,15 @@ def home_loop(text, schema):
         
     return final_res
 
-def process_tika(file_path, content_type='application/pdf'):
+def process_tika(file_path):
+    if file_path.endswith('.pdf'):
+        content_type = 'application/pdf'
+    elif file_path.endswith('.png') or file_path.endswith('.jpg') or file_path.endswith('.jpeg'):
+        content_type = 'image/' + file_path.split('.')[-1]
+    else:
+        raise ValueError("Unsupported file type. Only PDF and image files are supported.")
+            
+            
     headers = {
         'Content-Type': content_type,
     }
@@ -316,12 +324,7 @@ def tika_process():
     try:
         file_path = validate_file(request.json.get('filename'))
         
-        if file_path.endswith('.pdf'):
-            content_type = 'application/pdf'
-        elif file_path.endswith('.png') or file_path.endswith('.jpg') or file_path.endswith('.jpeg'):
-            content_type = 'image/' + file_path.split('.')[-1]
-        
-        text = process_tika(file_path, content_type)
+        text = process_tika(file_path)
         
         return jsonify(text), 200
     except ValueError as ve:
