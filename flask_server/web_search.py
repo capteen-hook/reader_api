@@ -1,5 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # query = "7229 S Hamlin Ave, Chicago, IL 60629"
 def search_duckduckgo(query):
@@ -25,8 +28,41 @@ def search_duckduckgo(query):
     print("Search Results:", text_results)
         
     return text_results
+    
+def search_tavily(query):
+    # curl -X POST https://api.tavily.com/search \
+    # -H 'Content-Type: application/json' \
+    # -H 'Authorization: Bearer ' \
+    # -d '{
+    #     "query": ""
+    # }'
+    
+    if not os.getenv('TAVILY_KEY'):
+        raise ValueError("TAVILY_KEY environment variable is not set.")
+    
+    url = "https://api.tavily.com/search"
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f"Bearer {os.getenv('TAVILY_KEY', '')}"
+    }
+    
+    data = {
+        "query": query
+    }
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code != 200:
+        raise Exception(f"Error fetching results: {response.status_code} - {response.text}")
+    results = response.json()
+    
+    res = []
+        
+    for result in results.get('results', []):
+        res.append(result.get('content', ''))
+        
+    return "\n\n".join(res)
 
 if __name__ == "__main__":
     query = "7229 S Hamlin Ave, Chicago, IL 60629"
-    search_results = search_duckduckgo(query)
+    search_results = search_tavily(query)
     print(search_results)

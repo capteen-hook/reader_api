@@ -14,7 +14,7 @@ import jwt
 from functools import wraps
 
 # from flask_server.transformer_vision import process_vision
-from flask_server.web_search import search_duckduckgo
+from flask_server.web_search import search_tavily
 from flask_server.prompts import (fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema)
 from flask_server.test_page import homePage
 
@@ -38,7 +38,7 @@ os.makedirs(app.config['PROCESSING_FOLDER'], exist_ok=True)
 def home_loop(text, schema):
     
     # home inspection reports can be quite long, so we need to split them into chunks
-    chunksize = 3000
+    chunksize = 5000
     overlap = 100
     chunks = [text[i:i + chunksize] for i in range(0, len(text), chunksize - overlap)]
     results = []
@@ -63,13 +63,13 @@ def home_loop(text, schema):
     
     # do a web search for the address if it exists
     # address = final_res.get('address', '')
-    # if address:
-    #     print("Performing web search for address:", address)
-    #     search_results = search_duckduckgo(address)
+    if address:
+        print("Performing web search for address:", address)
+        search_results = search_tavily(address)
         
-    #     final_res = process_plaintext(search_results, schema, fill_home_form_websearch(search_results, schema, final_res))
+        final_res = process_plaintext(search_results, schema, fill_home_form_websearch(search_results, schema, final_res))
         
-    #     print("Final result after web search:", final_res)
+        print("Final result after web search:", final_res)
         
     return final_res
 
