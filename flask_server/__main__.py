@@ -62,8 +62,8 @@ def home_loop(text, schema):
     print("All results:", results)
     
     # do a web search for the address if it exists
-    # address = final_res.get('address', '')
-    if address:
+    address = final_res.get('address', '')
+    if address and address != '':
         print("Performing web search for address:", address)
         search_results = search_tavily(address)
         
