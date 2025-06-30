@@ -38,8 +38,8 @@ os.makedirs(app.config['PROCESSING_FOLDER'], exist_ok=True)
 def home_loop(text, schema):
     
     # home inspection reports can be quite long, so we need to split them into chunks
-    chunksize = 5000
-    overlap = 100
+    chunksize = 10000
+    overlap = 200
     chunks = [text[i:i + chunksize] for i in range(0, len(text), chunksize - overlap)]
     results = []
     final_res = {}
