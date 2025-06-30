@@ -45,7 +45,11 @@ def home_loop(text, schema):
     final_res = {}
     for i, chunk in enumerate(chunks):
         print(f"Processing chunk {i+1}/{len(chunks)}")
-        result = process_plaintext(chunk, schema, fill_home_form_forward(chunk, schema, final_res))
+        try:
+            result = process_plaintext(chunk, schema, fill_home_form_forward(chunk, schema, final_res))
+        except Exception as e:
+            print(f"Error processing chunk {i+1}: {e}")
+            result = final_res.copy()  # Use the last valid result as a fallback
         
         # try and merge the result with the final result- deferring to the new result 
         # print the type of final res
@@ -67,7 +71,10 @@ def home_loop(text, schema):
         print("Performing web search for address:", address)
         search_results = search_tavily(address)
         
-        final_res = process_plaintext(search_results, schema, fill_home_form_websearch(search_results, schema, final_res))
+        try:
+            final_res = process_plaintext(search_results, schema, fill_home_form_websearch(search_results, schema, final_res))
+        except Exception as e:
+            print(f"Error processing web search results: {e}")
         
         print("Final result after web search:", final_res)
         
@@ -113,7 +120,7 @@ def process_plaintext(text, schema, prompt=None):
         # Log the error and the problematic result
         print(f"Error decoding JSON: {e}")
         print(f"Result string: {result}")
-        return json.loads('{"error": "Invalid JSON format in response"}')
+        raise ValueError("Failed to parse JSON from the generator output.")
     
 def validate_file(filename):
     try:
@@ -212,7 +219,11 @@ def process_pdf():
         schema = validate_form(request.json.get('form'), default=example_schema)
        
         text = process_tika(file_path)
-        content = process_plaintext(text, schema)
+        try:
+            content = process_plaintext(text, schema)
+        except ValueError as e:
+            print(f"Error processing PDF: {e}")
+            return jsonify({"error": str(e)}), 400
         
         return jsonify(content), 200
     except ValueError as ve:
@@ -253,7 +264,11 @@ def process_appliance_photo():
         
         # content = process_vision(text, schema) This is a lot more powerful, but requires a lot of resources
         text = process_tika(file_path)
-        content = process_plaintext(text, schema, fill_appliance_form(text, schema))
+        try:    
+            content = process_plaintext(text, schema, fill_appliance_form(text, schema))
+        except ValueError as e:
+            print(f"Error processing appliance photo: {e}")
+            return jsonify({"error": str(e)}), 400
         
         return jsonify(content), 200
     except ValueError as ve:
@@ -274,8 +289,12 @@ def process_txt():
         
         with open(file_path, 'r') as f:
             text = f.read()
-    
-        content = process_plaintext(text, schema)
+
+        try:
+            content = process_plaintext(text, schema)
+        except ValueError as e:
+            print(f"Error processing text file: {e}")
+            return jsonify({"error": str(e)}), 400
         
         return jsonify(content), 200        
     except ValueError as ve:
@@ -297,7 +316,11 @@ def process_text():
         if not text:
             return jsonify({"error": "Invalid text"}), 400
         
-        content = process_plaintext(text, schema)
+        try:
+            content = process_plaintext(text, schema)
+        except ValueError as e:
+            print(f"Error processing text: {e}")
+            return jsonify({"error": str(e)}), 400
         
         return jsonify(content), 200
     
