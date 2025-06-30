@@ -106,8 +106,15 @@ def process_plaintext(text, schema, prompt=None):
     generator = Generator(model, schema)
     # Process the text with the prompt
     result = generator(prompt)    
-    return json.loads(result)
-
+    try:
+        # Attempt to parse the result as JSON
+        return json.loads(result)
+    except json.JSONDecodeError as e:
+        # Log the error and the problematic result
+        print(f"Error decoding JSON: {e}")
+        print(f"Result string: {result}")
+        return json.loads('{"error": "Invalid JSON format in response"}')
+    
 def validate_file(filename):
     try:
         # Validate filename
