@@ -23,26 +23,105 @@ components:
   schemas:
     Form:
       type: object
+      additionalProperties: true
       description: >
         A JSON schema object that specifies which fields to extract from the file.
-      properties:
-        form:
-          type: object
-          description: A valid JSON schema object that specifies the fields to extract from the file
+      example: 
+        {
+          "$$defs": {
+              "Status": {
+                  "enum": ["success", "failure"],
+                  "title": "Status",
+                  "type": "string"
+              }
+          },
+          "properties": {
+              "status": {
+                  "$$ref": "#/$defs/Status"
+              },
+              "response": {
+                  "type": "string"
+              }
+          },
+          "required": ["status", "response"],
+          "title": "Structured Response",
+          "type": "object"
+        }
     HomeForm:
       type: object
+      additionalProperties: true
       description: >
         A JSON schema object that specifies which fields to extract from a home inspection report.
         Routes that use a Home form will try to use additional location services to fill in missing information if possible.
-      properties:
-        form:
-          type: object
-          description: A valid JSON schema object that specifies the fields to extract from the home inspection report
+      example:
+        {
+          "properties": {
+            "address": {
+                "type": "string"
+            },
+            "bedrooms": {
+                "type": "integer"
+            },
+            "bathrooms": {
+                "type": "integer"
+            },
+            "square_footage": {
+                "type": "integer"
+            },
+            "year_built": {
+                "type": "integer"
+            },
+            "type": {
+                "type": "string"
+            },
+            "stories": {
+                "type": "integer"
+            },
+            "basement": {
+                "type": "boolean"
+            },
+            "garage": {
+                "type": "boolean"
+            },
+            "pool": {
+                "type": "boolean"
+            },
+            "roof_type": {
+                "type": "string"
+            },
+            "location": {
+                "type": "string"
+            }
+        },
+        "required": ["address", "type"],
+        "title": "Home",
+        "type": "object"
+      }
     ApplianceForm:
       type: object
+      additionalProperties: true
       description: >
         A JSON schema object that specifies which fields to extract from a photo of an appliance manufacturer plate.
         Routes that use an Appliance form will try to use additional manufacturer services to fill in missing information if possible.
+      example:
+        {
+          "serial_number": {
+              "type": "string"
+          },
+          "model_number": {
+              "type": "string"
+          },
+          "manufacturer": {
+              "type": "string"
+          },
+          "manufacture_date": {
+              "type": "string",
+              "format": "date"
+          },
+          "type": {
+              "type": "string"
+          }
+        }
     Task:
       type: object
       description: >
@@ -55,11 +134,17 @@ components:
           type: string
           description: The current status of the task (e.g., 'queued', 'processing', 'completed', 'failed')
         result:
-          type: object
-          description: The result of the task, if available
+          oneOf:
+            - type: object
+              additionalProperties: true
+              description: The structured result of the processed file, if available
+            - type: string
+              description: The raw text content of the file, if available
         error:
           type: string
           description: An error message if the task failed
+      required:
+        - id
 paths:
   /:
     get:
@@ -206,7 +291,7 @@ paths:
                   type: string
                   format: binary
                 form:
-                  $ref: '#/components/schemas/DefaultApplianceForm'
+                  $ref: '#/components/schemas/ApplianceForm'
       responses:
         '200':
           description: Successful file upload and task creation
@@ -373,7 +458,7 @@ paths:
                   type: string
                   description: The name of the uploaded file
                 form:
-                  $ref: '#/components/schemas/DefaultApplianceForm'
+                  $ref: '#/components/schemas/ApplianceForm'
       responses:
         '200':
           description: Successful task creation

@@ -4,6 +4,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/v1")
+TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
+
+client = ollama.Client()
+model = from_ollama(client, os.getenv("MODEL_NAME", "gemma3:4b"))
+
 def home_loop(text, schema):
     
     # home inspection reports can be quite long, so we need to split them into chunks
