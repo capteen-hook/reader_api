@@ -10,6 +10,10 @@ tags:
     description: Operations related to file uploads
   - name: processing
     description: Operations related to processing uploaded files
+  - name: Home
+    description: Operations related to processing home inspection reports
+  - name: Appliance
+    description: Operations related to processing appliance manufacturer plates
 components:
   securitySchemes:
     BearerAuth:
@@ -20,65 +24,42 @@ components:
     Form:
       type: object
       description: >
-        A JSON object that specifies which fields to extract from the file, 
-        and which type they should be. Valid values are: string, integer, 
-        float, boolean, datetime, or array[type] of the previous types. 
-        If the type is not specified, it defaults to string, and nested 
-        objects are not supported.
+        A JSON schema object that specifies which fields to extract from the file.
       properties:
-        filename:
-          type: string
-          description: The name of the file to process
         form:
           type: object
-          description: A valid json object that specifies the fields to extract from the file
+          description: A valid JSON schema object that specifies the fields to extract from the file
     HomeForm:
       type: object
       description: >
-        Similar to a Form, with additional types: address and latlon
-    DefaultHomeForm:
-      type: object
-      description: A default home form with fields for address and latlon
+        A JSON schema object that specifies which fields to extract from a home inspection report.
+        Routes that use a Home form will try to use additional location services to fill in missing information if possible.
       properties:
-        address:
-          type: string
-          description: The address of the home
-        latlon:
-          type: array
-          items:
-            type: number
-          description: Latitude and longitude coordinates of the home
-        year_built:
-          type: integer
-          description: The year the home was built
-        square_footage:
-          type: integer
-          description: The total square footage of the home
-        bedrooms:
-          type: integer
-          description: The number of bedrooms in the home
-        bathrooms:
-          type: integer
-          description: The number of bathrooms in the home
-        pool:
-          type: boolean
-          description: Whether the home has a pool or not
-        garage:
-          type: boolean
-          description: Whether the home has a garage or not
-    DefaultApplianceForm:
+        form:
+          type: object
+          description: A valid JSON schema object that specifies the fields to extract from the home inspection report
+    ApplianceForm:
       type: object
-      description: A default appliance form with fields for serial number and model number
+      description: >
+        A JSON schema object that specifies which fields to extract from a photo of an appliance manufacturer plate.
+        Routes that use an Appliance form will try to use additional manufacturer services to fill in missing information if possible.
+    Task:
+      type: object
+      description: >
+        A task that has been queued for processing.
       properties:
-        serial_number:
+        id:
           type: string
-          description: The serial number of the appliance
-        manufacturer:
+          description: The unique identifier for the task
+        status:
           type: string
-          description: The manufacturer of the appliance
-        type:
+          description: The current status of the task (e.g., 'queued', 'processing', 'completed', 'failed')
+        result:
+          type: object
+          description: The result of the task, if available
+        error:
           type: string
-          description: The type of the appliance (e.g., refrigerator, washer, dryer)
+          description: An error message if the task failed
 paths:
   /:
     get:
@@ -92,12 +73,24 @@ paths:
               schema:
                 type: string
                 example: '<h1>File Reader API is running</h1>'
+  /docs:
+    get:
+      summary: API Documentation
+      description: Access the rendered OpenAPI documentation for the File Reader API.
+      responses:
+        '200':
+          description: Successful response with API documentation
+          content:
+            text/html:
+              schema:
+                type: string
+                example: '<h1>File Reader API Documentation</h1>'
   /upload:
     post:
       tags:
         - file
       summary: Upload a file
-      description: Upload a file to the server. Returns the filename for later processing.
+      description: Upload a file to the server. Returns the filename for later processing. Files are only stored temporarily and will removed.
       security:
         - BearerAuth: []
       requestBody:
@@ -120,17 +113,120 @@ paths:
                 properties:
                   filename:
                     type: string
-                    description: The name of the uploaded file
-        '400':
-          description: Bad request, invalid file
-        '500':
-          description: Internal server error
-  /process/txt:
+                    description: The identifier for the uploaded file, used for later processing
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /process/upload:
     post:
       tags:
         - processing
-      summary: Process a text file
-      description: Process a previously uploaded text file and receive its content in a structured format.
+        - file
+      summary: Upload and process a file
+      description: Upload a file and process it immediately.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                form:
+                  $ref: '#/components/schemas/Form'
+      responses:
+        '200':
+          description: Successful file upload and task creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token  
+  /process/upload/home:
+    post:
+      tags:
+        - home
+        - file
+      summary: Upload and process a home inspection report
+      description: Upload a home inspection report and process it immediately. Uses a default home form if no form is provided.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                form:
+                  $ref: '#/components/schemas/HomeForm'
+      responses:
+        '200':
+          description: Successful file upload and task creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /process/upload/appliance:
+    post:
+      tags:
+        - appliance
+        - file
+      summary: Upload and process a photo of an appliance manufacturer plate
+      description: Upload a photo of an appliance manufacturer plate and process it immediately. Uses a default appliance form if no form is provided.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                form:
+                  $ref: '#/components/schemas/DefaultApplianceForm'
+      responses:
+        '200':
+          description: Successful file upload and task creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /process:
+    post:
+      tags:
+        - processing
+      summary: Process a file
+      description: Process a previously uploaded file, parsing its content into a structured format based on the provided form. If no form is provided, it uses a default form.
       security:
         - BearerAuth: []
       requestBody:
@@ -147,61 +243,23 @@ paths:
                   $ref: '#/components/schemas/Form'
       responses:
         '200':
-          description: Successful response with file content
+          description: Successful task creation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: object
-                    description: The extracted content from the text file
-        '400':
-          description: Bad request, invalid filename or form data
-        '404':
-          description: File not found
-        '500':
-          description: Internal server error
-  /process/text:
-    post:
-      tags:
-        - processing
-      summary: Process a plain text request
-      description: Process a plain text request and receive its content in a structured format. This route is useful for quick text processing without file uploads.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                text:
-                  type: string
-                  description: The plain text to process
-                form:
-                  $ref: '#/components/schemas/Form'
-      responses:
-        '200':
-          description: Successful response with processed text content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  content:
-                    type: object
-                    description: The extracted content from the plain text
-        '400':
-          description: Bad request, invalid text or form data
-        '500':
-          description: Internal server error
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
   /process/ocr:
     post:
       tags:
         - processing
-      summary: Process an image or PDF file for OCR
+      summary: Use Optical Character Recognition (OCR) on a file 
       description: Process a previously uploaded file for OCR. Returns the raw text content, unformatted.
       security:
         - BearerAuth: []
@@ -217,58 +275,51 @@ paths:
                   description: The name of the uploaded file
       responses:
         '200':
-          description: Successful response with OCR content
+          description: Successful task creation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: string
-                    description: The raw text content extracted from the file
-        '400':
-          description: Bad request, invalid filename
-        '404':
-          description: File not found
-        '500':
-          description: Internal server error
-  /process/pdf:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /process/upload/ocr:
     post:
       tags:
         - processing
-      summary: Process a PDF file
-      description: Process a previously uploaded PDF file and receive its content. This route does the analysis in one shot, so may be less accurate.
+        - file
+      summary: Upload and process a file for OCR
+      description: Upload a file and process it immediately for OCR. Returns the raw text content, unformatted.
       security:
         - BearerAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
-                filename:
+                file:
                   type: string
-                  description: The name of the uploaded file
-                form:
-                  $ref: '#/components/schemas/Form'
+                  format: binary
       responses:
         '200':
-          description: Successful response with file content
+          description: Successful file upload and task creation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: object
-                    description: The extracted content from the PDF file
-        '400':
-          description: Bad request, invalid filename or form data
-        '404':
-          description: File not found
-        '500':
-          description: Internal server error
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
   /process/home:
     post:
       tags:
@@ -291,21 +342,18 @@ paths:
                   $ref: '#/components/schemas/HomeForm'
       responses:
         '200':
-          description: Successful response with home inspection report content
+          description: Successful task creation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: object
-                    description: The extracted content from the home inspection report
-        '400':
-          description: Bad request, invalid filename or form data
-        '404':
-          description: File not found
-        '500':
-          description: Internal server error
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
   /process/appliance:
     post:
       tags:
@@ -328,27 +376,68 @@ paths:
                   $ref: '#/components/schemas/DefaultApplianceForm'
       responses:
         '200':
-          description: Successful response with appliance information
+          description: Successful task creation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: object
-                    description: The extracted content from the appliance photo
-        '400':
-          description: Bad request, invalid filename or form data
+                  task:
+                    $ref: '#/components/schemas/Task'
+  /tasks:
+    get:
+      tags:
+        - processing
+      summary: Retrieve current task status and queue length
+      description: Get the current status of tasks in the queue, including their IDs, statuses, and results if available.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved task status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /tasks/{task_id}:
+    get:
+      tags:
+        - processing
+      summary: Retrieve a specific task status
+      description: Get the status of a specific task by its ID, including its current status and result if available.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The unique identifier for the task
+      responses:
+        '200':
+          description: Successfully retrieved task status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
         '404':
-          description: File not found
-        '500':
-          description: Internal server error
+          description: Task not found
+        '401':
+          description: Unauthorized, invalid or missing authentication token
   /clear:
     post:
       tags:
         - file
-      summary: Manually clear the uploaded files
-      description: Clear all uploaded files from the server. This is useful for testing and development purposes.
+      summary: Manually clear the uploaded files and tasks, and cancel the current task.
+      description: Clear all uploaded files and tasks from the server. This is useful for testing and development purposes.
       security:
         - BearerAuth: []
       responses:
@@ -359,8 +448,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    description: Confirmation message that files have been cleared
+                  files_cleared:
+                    type: integer
+                    description: The number of files cleared from the server
+                  tasks_cleared:
+                    type: integer
+                    description: The number of tasks cleared from the server
         '500':
           description: Internal server error
