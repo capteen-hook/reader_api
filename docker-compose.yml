@@ -1,32 +1,50 @@
+version: '3.8'
+
 services:
   flask_server:
     build:
       context: ./flask_server
       dockerfile: Dockerfile
-    container_name: flask_server
+    container_name: ${FLASK_SERVER_CONTAINER_NAME:-flask_server}
     depends_on:
       - tika
+      - rabbitmq
     restart: always
     ports:
-      - "5000:5000"
+      - "${FLASK_SERVER_PORT:-5000}:5000"
     networks:
       - tika_network
+    volumes:
+      - ${FLASK_SERVER_ENV_FILE:-./.env}:/flask_server/.env
 
   tika:
-    image: apache/tika:latest-full
-    container_name: tika
+    image: ${TIKA_IMAGE:-apache/tika:latest-full}
+    container_name: ${TIKA_CONTAINER_NAME:-tika}
     ports:
-      - "${TIKA_PORT-9998}:9998"
+      - "${TIKA_PORT:-9998}:9998"
     configs:
       - source: tika_config_3
         target: /tika-config.xml
     restart: unless-stopped
     networks:
       - tika_network
-      
+
+  rabbitmq:
+    image: ${RABBITMQ_IMAGE:-rabbitmq:management}
+    container_name: ${RABBITMQ_CONTAINER_NAME:-rabbitmq}
+    ports:
+      - "${RABBITMQ_PORT_1:-5672}:5672"
+      - "${RABBITMQ_PORT_2:-15672}:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
+    restart: unless-stopped
+    networks:
+      - tika_network
+
 configs:
   tika_config_3:
-    file: ./tika-config.xml
+    file: ${TIKA_CONFIG_FILE:-./tika-config.xml}
 
 networks:
   tika_network:

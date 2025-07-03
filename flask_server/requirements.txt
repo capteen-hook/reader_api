@@ -13,3 +13,4 @@ datasets
 torchvision
 beautifulsoup4
 pyjwt
+celery

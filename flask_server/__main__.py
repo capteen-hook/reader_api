@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 import json
 import jwt 
 from functools import wraps
+from celery import Celery
 
 # from flask_server.transformer_vision import process_vision
 from flask_server.web_search import search_tavily
@@ -22,6 +23,13 @@ from flask_server.process import process_tika, process_plaintext, home_loop
 
 load_dotenv()
 PORT = int(os.getenv("PORT", 8000))
+
+capp = Celery('tasks', broker=os.getenv('RABBITMQ_URL', 'http://localhost:5672/'))
+
+@capp.task
+def test_task():
+    print("This is a test task running in Celery")
+    return "Task completed successfully"
 
 app = Flask(__name__)
 
