@@ -22,4 +22,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE ${PORT:-8000}
 
-CMD ["python", "-m", "flask_server"]
+CMD ["python", "__main__.py"]

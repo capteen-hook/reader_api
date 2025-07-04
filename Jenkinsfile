@@ -35,6 +35,9 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Build .env') {
+            
+        }
         stage('Build with Docker Compose') {
             steps {
                 sh 'docker compose up -d --build'
