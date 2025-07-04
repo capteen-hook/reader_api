@@ -15,7 +15,7 @@ pipeline {
         JWT_SECRET_KEY='none'
         TAVILY_KEY='none'
         FLASK_SERVER_CONTAINER_NAME='flask_server'
-        FLASK_SERVER_PORT='5000'
+        FLASK_SERVER_PORT='8000'
         FLASK_SERVER_ENV_FILE='./.env'
         TIKA_IMAGE='apache/tika:latest-full'
         TIKA_CONTAINER_NAME='tika'
