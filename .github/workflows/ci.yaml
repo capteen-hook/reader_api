@@ -1,0 +1,22 @@
+name: Jenkinsfile Runner CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  jenkins-pipeline:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/jenkinsci/jenkinsfile-runner:master
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Run Jenkinsfile Runner
+        uses: jenkinsci/jfr-container-action@master
+        with:
+          command: run
+          jenkinsfile: Jenkinsfile
+          pluginstxt: plugins.txt
