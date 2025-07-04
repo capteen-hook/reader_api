@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-COPY . /app
+COPY . /app/flask_server
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
