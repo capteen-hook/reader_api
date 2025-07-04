@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        OLLAMA_URL=http://localhost:11434/v1'
+        OLLAMA_URL='http://localhost:11434/v1'
         TIKA_URL='http://tika:9998/tika'
         RABBITMQ_URL='http://rabbitmq:15672/api'
 
