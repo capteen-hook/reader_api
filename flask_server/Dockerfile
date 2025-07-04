@@ -18,7 +18,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 COPY . /app/flask_server
 
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r ./flask_server/requirements.txt
 
 EXPOSE ${PORT:-8000}
 
