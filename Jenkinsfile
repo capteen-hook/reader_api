@@ -35,11 +35,6 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Build with Docker Compose') {
-            steps {
-                sh 'docker compose up -d --build'
-            }
-        }
         stage('Verify Dockerfile') {
             steps {
                 sh '''
@@ -48,6 +43,11 @@ pipeline {
                     exit 1
                 fi
                 '''
+            }
+        }
+        stage('Build with Docker Compose') {
+            steps {
+                sh 'docker compose up -d --build'
             }
         }
         stage('Run Tests') {
