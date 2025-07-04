@@ -40,6 +40,31 @@ pipeline {
                 sh 'docker compose up -d --build'
             }
         }
+        stage('Wait for health check') {
+                steps {
+                    script {
+                        def maxRetries = 10
+                        def retryCount = 0
+                        def isHealthy = false
+
+                        while (retryCount < maxRetries) {
+                            try {
+                                sh 'curl -f http://loc`1alhost:8000/' // Check if Flask service is healthy
+                                isHealthy = true
+                                break
+                            } catch (Exception e) {
+                                retryCount++
+                                echo "Flask service not healthy yet. Retrying in 10 seconds... (${retryCount}/${maxRetries})"
+                                sleep 10
+                            }
+                        }
+
+                        if (!isHealthy) {
+                            error "Flask service failed to become healthy after ${maxRetries} retries."
+                        }
+                    }
+                }
+            }
         stage('Run Tests') {
             steps {
                 sh 'curl -f http://localhost:8000/' // Flask Service should be running
