@@ -40,6 +40,16 @@ pipeline {
                 sh 'docker compose up -d --build'
             }
         }
+        stage('Verify Dockerfile') {
+            steps {
+                sh '''
+                if [ ! -f ./flask_server/Dockerfile ]; then
+                    echo "Error: Dockerfile not found in ./flask_server"
+                    exit 1
+                fi
+                '''
+            }
+        }
         stage('Run Tests') {
             steps {
                 sh 'curl -f http://localhost:8000/' // Flask Service should be running
