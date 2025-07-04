@@ -27,6 +27,7 @@ pipeline {
                     sh '''
                     curl -f http://localhost:${FLASK_SERVER_PORT:-5000}/health || exit 1
                     curl -f http://localhost:${TIKA_PORT:-9998}/tika || exit 1
+                    curl -f http://localhost:${RABBITMQ_PORT:-5672}/ || exit 1
                     '''
                 }
             }
