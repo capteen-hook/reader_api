@@ -38,6 +38,7 @@ pipeline {
         stage('Create .env File') {
             steps {
                 script {
+                    sh 'rm -rf .env' // Ensure no directory or file named `.env` exists
                     writeFile file: '.env', text: """
                         OLLAMA_URL=${OLLAMA_URL}
                         TIKA_URL=${TIKA_URL}
