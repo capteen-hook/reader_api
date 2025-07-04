@@ -15,11 +15,11 @@ from functools import wraps
 from celery import Celery
 
 # from flask_server.transformer_vision import process_vision
-from flask_server.web_search import search_tavily
-from flask_server.prompts import fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema
+from tools.web_search import search_tavily
+from ai.prompts import fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema
 from flask_server.test_page import homePage
-from flask_server.utils import validate_file, validate_form, verify_jwt
-from flask_server.process import process_tika, process_plaintext, home_loop
+from tools.utils import validate_file, validate_form, verify_jwt
+from ai.process import process_tika, process_plaintext, home_loop
 
 load_dotenv()
 PORT = int(os.getenv("PORT", 8000))
