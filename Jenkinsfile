@@ -35,21 +35,6 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Verify Dockerfile') {
-            steps {
-                sh '''
-                pwd
-                ls
-                ls ./flask_server
-                ls ./flask_server/Dockerfile
-                tail ./flask_server/Dockerfile
-                if [ ! -f ./flask_server/Dockerfile ]; then
-                    echo "Error: Dockerfile not found in ./flask_server"
-                    exit 1
-                fi
-                '''
-            }
-        }
         stage('Build with Docker Compose') {
             steps {
                 sh 'docker compose up -d --build'
