@@ -12,6 +12,8 @@ services:
       - "${FLASK_SERVER_PORT:-8000}:8000"
     networks:
       - tika_network
+    volumes:
+      - ${FLASK_SERVER_ENV_FILE:-./.env}:/flask_server/.env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${FLASK_SERVER_PORT:-8000}/"]
       interval: 30s
