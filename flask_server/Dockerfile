@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -22,4 +22,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE ${PORT:-8000}
 
-CMD ["python", "__main__.py"]
+CMD ["python", "-m", "flask_server"]
