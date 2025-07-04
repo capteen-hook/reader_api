@@ -35,6 +35,38 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Create .env File') {
+            steps {
+                script {
+                    writeFile file: '.env', text: """
+                        OLLAMA_URL=${OLLAMA_URL}
+                        TIKA_URL=${TIKA_URL}
+                        RABBITMQ_URL=${RABBITMQ_URL}
+                        PORT=${PORT}
+                        TRANSFORMERS_CACHE=${TRANSFORMERS_CACHE}
+                        WORK_DIR=${WORK_DIR}
+                        MODEL_NAME=${MODEL_NAME}
+                        POPPLER_PATH=${POPPLER_PATH}
+                        LIGHTWEIGHT_MODE=${LIGHTWEIGHT_MODE}
+                        JWT_SECRET_KEY=${JWT_SECRET_KEY}
+                        TAVILY_KEY=${TAVILY_KEY}
+                        FLASK_SERVER_CONTAINER_NAME=${FLASK_SERVER_CONTAINER_NAME}
+                        FLASK_SERVER_PORT=${FLASK_SERVER_PORT}
+                        FLASK_SERVER_ENV_FILE=${FLASK_SERVER_ENV_FILE}
+                        TIKA_IMAGE=${TIKA_IMAGE}
+                        TIKA_CONTAINER_NAME=${TIKA_CONTAINER_NAME}
+                        TIKA_PORT=${TIKA_PORT}
+                        TIKA_CONFIG_FILE=${TIKA_CONFIG_FILE}
+                        RABBITMQ_IMAGE=${RABBITMQ_IMAGE}
+                        RABBITMQ_CONTAINER_NAME=${RABBITMQ_CONTAINER_NAME}
+                        RABBITMQ_PORT_1=${RABBITMQ_PORT_1}
+                        RABBITMQ_PORT_2=${RABBITMQ_PORT_2}
+                        RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+                        RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+                    """
+                }
+            }
+        }
         stage('Build with Docker Compose') {
             steps {
                 sh 'docker compose up -d --build'
