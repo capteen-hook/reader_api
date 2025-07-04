@@ -1,5 +1,5 @@
 Flask
-outlines
+outlines==1.0.4
 python-dotenv
 uvicorn
 Pillow
