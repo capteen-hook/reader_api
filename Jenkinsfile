@@ -38,6 +38,7 @@ pipeline {
         stage('Verify Dockerfile') {
             steps {
                 sh '''
+                pwd
                 if [ ! -f ./flask_server/Dockerfile ]; then
                     echo "Error: Dockerfile not found in ./flask_server"
                     exit 1
