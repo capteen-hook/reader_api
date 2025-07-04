@@ -9,13 +9,22 @@ services:
       - rabbitmq
     restart: always
     ports:
-      - "${FLASK_SERVER_PORT:-8000}:8000"
+      - "${PORT:-8000}:8000"
     networks:
       - tika_network
-    volumes:
-      - ${FLASK_SERVER_ENV_FILE:-./.env}:/flask_server/.env
+    environment:
+      TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
+      RABBITMQ_URL: ${RABBITMQ_URL:-http://rabbitmq:15672/api/}
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434/}
+      POPPLER_PATH: ${POPPLER_PATH:-}
+      TRANSFORMERS_CACHE: ${TRANSFORMERS_CACHE:-/tmp/transformers_cache}
+      WORK_DIR: ${WORK_DIR:-/tmp/workdir}
+      MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
+      PORT: ${PORT:-8000}
+      TAVILY_KEY: ${TAVILY_KEY:-}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${FLASK_SERVER_PORT:-8000}/"]
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-8000}/"]
       interval: 30s
       timeout: 10s
       retries: 5
