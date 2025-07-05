@@ -2,37 +2,37 @@ pipeline {
     agent any
 
     environment {
-        OLLAMA_URL=http://host.docker.internal:11434/v1 # ollama on the host machine, natively for performance
-        TIKA_URL=http://tika:9998/tika # these depend on the container names
-        RABBITMQ_URL=http://rabbitmq:15672/api # ^
+        OLLAMA_URL='http://host.docker.internal:11434/v1 # ollama on the host machine, natively for performance'
+        TIKA_URL='http://tika:9998/tika # these depend on the container names'
+        RABBITMQ_URL='http://rabbitmq:15672/api # ^'
 
-        PORT=8000
+        PORT='8000'
 
-        TRANSFORMERS_CACHE=./cache
-        WORK_DIR=./workdir
+        TRANSFORMERS_CACHE='./cache'
+        WORK_DIR='./workdir'
 
-        MODEL_NAME=gemma3:4b
+        MODEL_NAME='gemma3:4b'
 
-        POPPLER_PATH=
+        POPPLER_PATH=''
 
-        LIGHTWEIGHT_MODE=True # not used currently
+        LIGHTWEIGHT_MODE='True # not used currently'
 
-        JWT_SECRET_KEY=none
-        TAVILY_KEY=none
+        JWT_SECRET_KEY='none'
+        TAVILY_KEY='none'
 
-        FLASK_SERVER_CONTAINER_NAME=flask_server
+        FLASK_SERVER_CONTAINER_NAME='flask_server'
 
-        TIKA_IMAGE=apache/tika:latest-full
-        TIKA_CONTAINER_NAME=tika
-        TIKA_PORT=9998
-        TIKA_CONFIG_FILE=./tika-config.xml
+        TIKA_IMAGE='apache/tika:latest-full'
+        TIKA_CONTAINER_NAME='tika'
+        TIKA_PORT='9998'
+        TIKA_CONFIG_FILE='./tika-config.xml'
 
-        RABBITMQ_IMAGE=rabbitmq:management
-        RABBITMQ_CONTAINER_NAME=rabbitmq
-        RABBITMQ_PORT_1=5672
-        RABBITMQ_PORT_2=15672
-        RABBITMQ_DEFAULT_USER=user
-        RABBITMQ_DEFAULT_PASS=password
+        RABBITMQ_IMAGE='rabbitmq:management'
+        RABBITMQ_CONTAINER_NAME='rabbitmq'
+        RABBITMQ_PORT_1='5672'
+        RABBITMQ_PORT_2='15672'
+        RABBITMQ_DEFAULT_USER='user'
+        RABBITMQ_DEFAULT_PASS='password'
     }
 
     stages {
