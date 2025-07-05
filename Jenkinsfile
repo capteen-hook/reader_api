@@ -86,7 +86,7 @@ pipeline {
 
                         while (retryCount < maxRetries) {
                             try {
-                                sh 'curl -f http://loc`1alhost:8000/' // Check if Flask service is healthy
+                                sh 'curl -f http://localhost:8000/' // Check if Flask service is healthy
                                 isHealthy = true
                                 break
                             } catch (Exception e) {
