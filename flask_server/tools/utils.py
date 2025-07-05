@@ -58,3 +58,20 @@ def verify_jwt(token):
         return None
     except jwt.InvalidTokenError:
         return None
+
+def upload_file(request):
+    try:
+        file = request.files.get('file')
+        if not file:
+            raise ValueError("No file part in the request")
+        
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        
+        print(f"File {filename} uploaded successfully to {file_path}")
+        return file_path
+    
+    except Exception as e:
+        print(f"Error uploading file: {e}")
+        raise Exception("Error uploading file")
