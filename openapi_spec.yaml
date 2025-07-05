@@ -170,38 +170,7 @@ paths:
               schema:
                 type: string
                 example: '<h1>File Reader API Documentation</h1>'
-  /upload:
-    post:
-      tags:
-        - file
-      summary: Upload a file
-      description: Upload a file to the server. Returns the filename for later processing. Files are only stored temporarily and will removed.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  type: string
-                  format: binary
-      responses:
-        '200':
-          description: Successful file upload
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  filename:
-                    type: string
-                    description: The identifier for the uploaded file, used for later processing
-        '401':
-          description: Unauthorized, invalid or missing authentication token
-  /process/upload:
+  /process/file:
     post:
       tags:
         - processing
@@ -236,7 +205,7 @@ paths:
           description: Service unavailable, the server is currently busy processing other tasks
         '401':
           description: Unauthorized, invalid or missing authentication token  
-  /process/upload/home:
+  /process/home:
     post:
       tags:
         - home
@@ -271,7 +240,7 @@ paths:
           description: Service unavailable, the server is currently busy processing other tasks
         '401':
           description: Unauthorized, invalid or missing authentication token
-  /process/upload/appliance:
+  /process/appliance:
     post:
       tags:
         - appliance
@@ -306,73 +275,7 @@ paths:
           description: Service unavailable, the server is currently busy processing other tasks
         '401':
           description: Unauthorized, invalid or missing authentication token
-  /process:
-    post:
-      tags:
-        - processing
-      summary: Process a file
-      description: Process a previously uploaded file, parsing its content into a structured format based on the provided form. If no form is provided, it uses a default form.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                filename:
-                  type: string
-                  description: The name of the uploaded file
-                form:
-                  $ref: '#/components/schemas/Form'
-      responses:
-        '200':
-          description: Successful task creation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  task:
-                    $ref: '#/components/schemas/Task'
-        '503':
-          description: Service unavailable, the server is currently busy processing other tasks
-        '401':
-          description: Unauthorized, invalid or missing authentication token
   /process/ocr:
-    post:
-      tags:
-        - processing
-      summary: Use Optical Character Recognition (OCR) on a file 
-      description: Process a previously uploaded file for OCR. Returns the raw text content, unformatted.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                filename:
-                  type: string
-                  description: The name of the uploaded file
-      responses:
-        '200':
-          description: Successful task creation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  task:
-                    $ref: '#/components/schemas/Task'
-        '503':
-          description: Service unavailable, the server is currently busy processing other tasks
-        '401':
-          description: Unauthorized, invalid or missing authentication token
-  /process/upload/ocr:
     post:
       tags:
         - processing
@@ -405,70 +308,6 @@ paths:
           description: Service unavailable, the server is currently busy processing other tasks
         '401':
           description: Unauthorized, invalid or missing authentication token
-  /process/home:
-    post:
-      tags:
-        - processing
-      summary: Process a home inspection report
-      description: Process a previously uploaded home inspection report, along with a form, and parse the content into the form. Uses a default home form if no form is provided. Uses external services to fill in missing information if possible.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                filename:
-                  type: string
-                  description: The name of the uploaded file
-                form:
-                  $ref: '#/components/schemas/HomeForm'
-      responses:
-        '200':
-          description: Successful task creation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  task:
-                    $ref: '#/components/schemas/Task'
-        '503':
-          description: Service unavailable, the server is currently busy processing other tasks
-        '401':
-          description: Unauthorized, invalid or missing authentication token
-  /process/appliance:
-    post:
-      tags:
-        - processing
-      summary: Process a photo of a manufacturer plate on an appliance
-      description: Process a previously uploaded photo of a manufacturer plate on an appliance, along with a form, and parse the content into the form. Uses a default appliance form if no form is provided. Uses external services to fill in missing information if possible.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                filename:
-                  type: string
-                  description: The name of the uploaded file
-                form:
-                  $ref: '#/components/schemas/ApplianceForm'
-      responses:
-        '200':
-          description: Successful task creation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  task:
-                    $ref: '#/components/schemas/Task'
   /tasks:
     get:
       tags:
