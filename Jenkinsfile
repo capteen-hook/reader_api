@@ -13,7 +13,7 @@ pipeline {
 
         MODEL_NAME='gemma3:4b'
 
-        POPPLER_PATH=''
+        POPPLER_PATH='none'
 
         LIGHTWEIGHT_MODE='True # not used currently'
 
