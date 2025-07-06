@@ -40,6 +40,10 @@ app.config['PROCESSING_FOLDER'] = os.getenv('WORK_DIR', './work_dir') + '/proces
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['PROCESSING_FOLDER'], exist_ok=True)
 
+with open('flask_server/openapi_spec.yaml', 'r') as f:
+    openapispec = f.read()
+
+openapispec = ""
 def process_file(request):
     try:
         file_path = upload_file(request)
@@ -188,15 +192,7 @@ def index():
 
 @app.route('/docs', methods=['GET'])
 def docs():
-    return jsonify({
-        "endpoints": {
-            "/process/file": "Process a file",
-            "/process/home": "Process a home report",
-            "/process/appliance": "Process an appliance photo",
-            "/process/ocr": "Process OCR with Tika",
-            "/clear": "Clear uploads"
-        }
-    }), 200
+    return jsonify(openapispec, 200)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

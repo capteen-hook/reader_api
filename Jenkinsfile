@@ -93,6 +93,8 @@ pipeline {
                     break
                     }
 
+                    echo "Flask service is not healthy yet: ${sh(script: "docker inspect --format='{{.State.Health.Status}}' flask_server", returnStdout: true).trim()}"
+
                     retryCount++
                     sleep 10
                 }
@@ -119,6 +121,8 @@ pipeline {
                     break
                     }
 
+                    echo "Tika service is not healthy yet: ${sh(script: "docker inspect --format='{{.State.Health.Status}}' tika", returnStdout: true).trim()}"
+
                     retryCount++
                     sleep 10
                 }
@@ -144,6 +148,8 @@ pipeline {
                     isHealthy = true
                     break
                     }
+
+                    echo "RabbitMQ service is not healthy yet: ${sh(script: "docker inspect --format='{{.State.Health.Status}}' rabbitmq", returnStdout: true).trim()}"
 
                     retryCount++
                     sleep 10
