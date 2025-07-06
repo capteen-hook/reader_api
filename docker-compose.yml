@@ -24,7 +24,7 @@ services:
       TAVILY_KEY: ${TAVILY_KEY:-}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${PORT:-8000}/"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${PORT:-8000}/ || exit 1 && curl -f http://tika:9998/tika || exit 1"] # tika container doesnt have curl installed
       interval: 30s
       timeout: 10s
       retries: 5
@@ -41,12 +41,6 @@ services:
     restart: unless-stopped
     networks:
       - tika_network
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 5 sh -c '</dev/tcp/localhost/${TIKA_PORT:-9998}'"] # No curk in Tika image
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
 
   rabbitmq:
     image: ${RABBITMQ_IMAGE:-rabbitmq:management}
