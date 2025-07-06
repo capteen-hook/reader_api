@@ -42,7 +42,7 @@ services:
     networks:
       - tika_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${TIKA_PORT:-9998}/tika"]
+      test: ["CMD", "curl", "-f", "http://localhost:${TIKA_PORT:-9998}/"]
       interval: 30s
       timeout: 10s
       retries: 5
