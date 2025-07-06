@@ -77,36 +77,82 @@ pipeline {
                 sh 'docker compose up -d --build'
             }
         }
-        stage('Wait for health check') {
-                steps {
-                    script {
-                        def maxRetries = 10
-                        def retryCount = 0
-                        def isHealthy = false
+        stage('Flask healthcheck') {
+            steps {
+                script {
+                def maxRetries = 20
+                def retryCount = 0
+                def isHealthy = false
 
-                        while (retryCount < maxRetries) {
-                            try {
-                                sh 'curl -f http://flask_server:8000/' // Check if Flask service is healthy
-                                isHealthy = true
-                                break
-                            } catch (Exception e) {
-                                retryCount++
-                                echo "Flask service not healthy yet. Retrying in 10 seconds... (${retryCount}/${maxRetries})"
-                                sleep 10
-                            }
-                        }
+                while (retryCount < maxRetries) {
+                    def status = sh(script: "docker inspect --format='{{.State.Health.Status}}' flask_server", returnStdout: true).trim()
+                    echo "Current health status: ${status}"
 
-                        if (!isHealthy) {
-                            error "Flask service failed to become healthy after ${maxRetries} retries."
-                        }
+                    if (status == "healthy") {
+                    isHealthy = true
+                    break
                     }
+
+                    retryCount++
+                    sleep 10
+                }
+
+                if (!isHealthy) {
+                    error "Flask service failed to become healthy after ${maxRetries} retries."
+                }
                 }
             }
-        stage('Run Tests') {
+        }
+        stage('Tika healthcheck') {
             steps {
-                sh 'curl -f http://flask_server:8000/' // Flask Service should be running
-                sh 'curl -f http://tika:9998/' // Tika Service should be running
-                sh 'curl -f http://rabbitmq:5672/' // RabbitMQ Service should be running
+                script {
+                def maxRetries = 20
+                def retryCount = 0
+                def isHealthy = false
+
+                while (retryCount < maxRetries) {
+                    def status = sh(script: "docker inspect --format='{{.State.Health.Status}}' tika", returnStdout: true).trim()
+                    echo "Current health status: ${status}"
+
+                    if (status == "healthy") {
+                    isHealthy = true
+                    break
+                    }
+
+                    retryCount++
+                    sleep 10
+                }
+
+                if (!isHealthy) {
+                    error "Tika service failed to become healthy after ${maxRetries} retries."
+                }
+                }
+            }
+        }
+        stage('RabbitMQ healthcheck') {
+            steps {
+                script {
+                def maxRetries = 20
+                def retryCount = 0
+                def isHealthy = false
+
+                while (retryCount < maxRetries) {
+                    def status = sh(script: "docker inspect --format='{{.State.Health.Status}}' rabbitmq", returnStdout: true).trim()
+                    echo "Current health status: ${status}"
+
+                    if (status == "healthy") {
+                    isHealthy = true
+                    break
+                    }
+
+                    retryCount++
+                    sleep 10
+                }
+
+                if (!isHealthy) {
+                    error "RabbitMQ service failed to become healthy after ${maxRetries} retries."
+                }
+                }
             }
         }
     }

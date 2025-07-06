@@ -41,6 +41,12 @@ services:
     restart: unless-stopped
     networks:
       - tika_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${TIKA_PORT:-9998}/tika"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
   rabbitmq:
     image: ${RABBITMQ_IMAGE:-rabbitmq:management}
@@ -54,6 +60,12 @@ services:
     restart: unless-stopped
     networks:
       - tika_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-u", "${RABBITMQ_DEFAULT_USER:-user}:${RABBITMQ_DEFAULT_PASS:-password}", "http://localhost:${RABBITMQ_PORT_2:-15672}/api/healthchecks/node"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s      
 
 configs:
   tika_config_3:
