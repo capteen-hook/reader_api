@@ -86,7 +86,7 @@ pipeline {
 
                         while (retryCount < maxRetries) {
                             try {
-                                sh 'curl -f http://localhost:8000/' // Check if Flask service is healthy
+                                sh 'curl -f http://flask_server:8000/' // Check if Flask service is healthy
                                 isHealthy = true
                                 break
                             } catch (Exception e) {
@@ -104,9 +104,9 @@ pipeline {
             }
         stage('Run Tests') {
             steps {
-                sh 'curl -f http://localhost:8000/' // Flask Service should be running
-                sh 'curl -f http://localhost:9998/' // Tika Service should be running
-                sh 'curl -f http://localhost:5672/' // RabbitMQ Service should be running
+                sh 'curl -f http://flask_server:8000/' // Flask Service should be running
+                sh 'curl -f http://tika:9998/' // Tika Service should be running
+                sh 'curl -f http://rabbitmq:5672/' // RabbitMQ Service should be running
             }
         }
     }
