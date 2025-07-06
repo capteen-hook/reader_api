@@ -59,9 +59,8 @@ def verify_jwt(token):
     except jwt.InvalidTokenError:
         return None
 
-def upload_file(request):
+def upload_file(file):
     try:
-        file = request.files.get('file')
         if not file:
             raise ValueError("No file part in the request")
         

@@ -13,23 +13,17 @@ import json
 import jwt 
 from functools import wraps
 from celery import Celery
+from celery.exceptions import QueueFull
 
 # from flask_server.transformer_vision import process_vision
 from flask_server.tools.web_search import search_tavily
 from flask_server.ai.prompts import fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema
 from flask_server.test_page import homePage
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
-from flask_server.ai.process import process_tika, process_plaintext, home_loop
-
+from flask_server.ai.process import process_tika, process_plaintext, home_loop, process_file
+    
 load_dotenv()
 PORT = int(os.getenv("PORT", 8000))
-
-capp = Celery('tasks', broker=os.getenv('RABBITMQ_URL', 'http://localhost:5672/'))
-
-@capp.task
-def test_task():
-    print("This is a test task running in Celery")
-    return "Task completed successfully"
 
 app = Flask(__name__)
 
@@ -40,43 +34,47 @@ app.config['PROCESSING_FOLDER'] = os.getenv('WORK_DIR', './work_dir') + '/proces
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['PROCESSING_FOLDER'], exist_ok=True)
 
-with open('flask_server/openapi_spec.yaml', 'r') as f:
-    openapispec = f.read()
+capp = Celery('tasks', broker=os.getenv('RABBITMQ_URL', 'http://localhost:5672/'))
+# Configure Celery to store task results
+capp.conf.update(
+    result_backend=os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0'),
+    task_annotations={
+        '*': {'rate_limit': '10/s'}  # Example rate limit
+    },
+    task_acks_late=True,  # Ensure tasks are acknowledged only after completion
+    worker_prefetch_multiplier=1,  # Prevent workers from prefetching too many tasks
+)
 
-openapispec = ""
-def process_file(request):
-    try:
-        file_path = upload_file(request)
-        
-        if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp']:
-            # For image files, we can use vision processing
-            # but for now- just try and get text from it with Tika
-            # text = process_vision(file_path)
-            text = process_tika(file_path)
-        else:
-            # For PDF files, use Tika to extract text
-            text = process_tika(file_path)
-            
-        if not text:
-            raise ValueError("No text extracted from the file")
-        
-        schema = validate_form(request.form.get('form'), default=example_schema)
-        
-        if not schema:
-            raise ValueError("Invalid form schema provided")
-        content = fill_form(text, schema)
-        if not content:
-            raise ValueError("No content generated from the form")
-        
-        return jsonify(content), 200
+
+# Set a task queue limit
+MAX_TASKS = int(os.getenv('MAX_TASKS', 30))
+
+@capp.task
+def process_file_task(file_path, schema=example_schema):
+    print(f"Processing file: {file_path}")
+    processed_content = process_file(file_path, schema)
+    print(f"Processed content: {processed_content}")
+    return processed_content
     
-    except ValueError as ve:
-        print(f"Value error: {ve}")
-        return jsonify({"error": str(ve)}), 400
-    except Exception as e:
-        print(f"Error processing file: {e}")
-        return jsonify({"error": str(e)}), 500
+@capp.task
+def process_home_task(file_path, schema=default_home_form):
+    print(f"Processing home report: {file_path}")
+    text = process_tika(file_path)
+    content = home_loop(text, schema)
+    print(f"Processed home report content: {content}")
+    return content
 
+def queue_full():
+    """Check if the task queue is full."""
+    try:
+        active_tasks = capp.control.inspect().active() or {}
+        reserved_tasks = capp.control.inspect().reserved() or {}
+        total_tasks = sum(len(tasks) for tasks in active_tasks.values()) + sum(len(tasks) for tasks in reserved_tasks.values())
+        return total_tasks >= MAX_TASKS
+    except Exception as e:
+        print(f"Error checking task queue: {e}")
+        return False
+    
 @app.before_request
 def verify_api_key():
     # root path and docs path are public
@@ -99,42 +97,65 @@ def verify_api_key():
 
 @app.route('/process/file', methods=['POST'])
 def process_file_default():
-    return process_file(request)
+    try:
+        if queue_full():
+            print("Task queue is full, cannot enqueue file processing task")
+            return jsonify({"error": "Task queue is full"}), 503
+        
+        file_path = upload_file(request.form.get('file'))
+        schema = validate_form(request.form.get('form'), example_schema)
+        
+        id = process_file_task.apply_async(args=[file_path, schema])
+        return jsonify({"task_id": id.id}), 202
+    except Exception as e:
+        print(f"Error enqueuing file processing task: {e}")
+        return jsonify({"error": str(e)}), 500
+
     
 @app.route('/process/home', methods=['POST'])
 def process_home_report():
     try:
-        file_path = upload_file(request)
-        schema = validate_form(request.form.get('form'), default=default_home_form)
+        if queue_full():
+            print("Task queue is full, cannot enqueue file processing task")
+            return jsonify({"error": "Task queue is full"}), 503
         
-        text = process_tika(file_path)
-        content = home_loop(text, schema)
+        file_path = upload_file(request.form.get('file'))
+        schema = validate_form(request.form.get('form'), default_home_form)
         
-        return jsonify(content), 200
-    except ValueError as ve:
-        print(f"Value error: {ve}")
-        return jsonify({"error": str(ve)}), 400
-    except FileNotFoundError as fnfe:
-        print(f"File not found: {fnfe}")
-        return jsonify({"error": str(fnfe)}), 404
+        id = process_home_task.apply_async(args=[file_path, schema])
+        return jsonify({"task_id": id.id}), 202
+    
     except Exception as e:
-        print(f"Error processing home report: {e}")
+        print(f"Error enqueuing home report processing task: {e}")
         return jsonify({"error": str(e)}), 500
-
+    
 @app.route('/process/appliance', methods=['POST'])
 def process_appliance_photo():
-    # this just does process/file for now
-    return process_file(request)
+    try:
+        if queue_full():
+            print("Task queue is full, cannot enqueue file processing task")
+            return jsonify({"error": "Task queue is full"}), 503
+        
+        file_path = upload_file(request.form.get('file'))
+        schema = validate_form(request.form.get('form'), default_appliance_form)
+        # WIP!
+        # process_appliance_task.apply_async(args=[file_path, default_appliance_form])
+        id = process_file_task.apply_async(args=[file_path, default_appliance_form])
+        return jsonify({"task_id": id.id}), 202
+
+    except Exception as e:
+        print(f"Error enqueuing appliance photo processing task: {e}")
+        return jsonify({"error": str(e)}), 500
     
-@app.route('/process/ocr', methods=['POST'])
-def tika_process():
+@app.route('/process/ocr', methods=['POST']) 
+def tika_process():                                       # consider changing this to a task
     # get the OCR result from Tika
     try:
-        file_path = upload_file(request)
-        
+        file_path = upload_file(request.files.get('file'))
         text = process_tika(file_path)
         
         return jsonify(text), 200
+    
     except ValueError as ve:
         print(f"Value error: {ve}")
         return jsonify({"error": str(ve)}), 400
@@ -149,7 +170,11 @@ def tika_process():
 def get_tasks():
     try:
         tasks = capp.control.inspect().active() or {}
-        return jsonify(tasks), 200
+        queued_tasks = capp.control.inspect().reserved() or {}
+        return jsonify({
+            "active_tasks": tasks,
+            "queued_tasks": queued_tasks
+        }), 200
     except Exception as e:
         print(f"Error retrieving tasks: {e}")
         return jsonify({"error": str(e)}), 500
@@ -160,11 +185,13 @@ def get_task(task_id):
         task = capp.AsyncResult(task_id)
         if task.state == 'PENDING':
             response = {'state': task.state, 'status': 'Pending...'}
-        elif task.state != 'FAILURE':
+        elif task.state == 'SUCCESS':
             response = {'state': task.state, 'result': task.result}
-        else:
+        elif task.state == 'FAILURE':
             response = {'state': task.state, 'error': str(task.info)}
-        
+        else:
+            response = {'state': task.state, 'status': task.info}
+
         return jsonify(response), 200
     except Exception as e:
         print(f"Error retrieving task {task_id}: {e}")
@@ -173,6 +200,9 @@ def get_task(task_id):
 @app.route('/clear', methods=['GET'])
 def clear_uploads():
     try:
+        # clear tasks
+        capp.control.purge()
+        
         for filename in os.listdir(app.config['UPLOAD_FOLDER']):
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             os.remove(file_path)
@@ -192,7 +222,15 @@ def index():
 
 @app.route('/docs', methods=['GET'])
 def docs():
-    return jsonify(openapispec, 200)
+    try:
+        with open('flask_server/openapi_spec.yaml', 'r') as f: 
+            openapispec = f.read()
+    except FileNotFoundError:
+        return jsonify({"error": "OpenAPI specification file not found"}), 404
+    except Exception as e:
+        print(f"Error reading OpenAPI specification: {e}")
+        return jsonify({"error": str(e)}), 500
+        
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

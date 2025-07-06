@@ -206,6 +206,32 @@ document.getElementById('clearUploadsForm').addEventListener('submit', function(
 });
 """
 
+def file_upload_tab(tab_info):
+    # similiar to process form but no text area for form data
+    return f"""
+<div id="{tab_info['tab_id']}" style="display: none;">
+    <h2>{tab_info['tab_name']}</h2>
+    <form class="upload-form" action="{tab_info['action_url']}" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" required>
+    <input type="text" name="auth" placeholder="Enter authentication token" required>
+    <br>
+    <input type="submit" value="Upload File">
+    </form>
+</div>
+"""
+
+def button_tab(tab_info):
+    return f"""
+<div id="{tab_info['tab_id']}" style="display: none;">
+    <h2>{tab_info['tab_name']}</h2>
+    <form action="{tab_info['action_url']}" method="post">
+    <input type="text" name="auth" placeholder="Enter authentication token" required>
+    <br>
+    <input type="submit" value="{tab_info['tab_name']}">
+    </form>
+</div>
+"""
+
 def ollama_active_element(ollama_active):
     if ollama_active:
         return '<div style="color: green; font-weight: bold;">Ollama is active</div>'
@@ -242,73 +268,63 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
     # ollama health check:
     ollama_active = try_ollama()
     
-    proccess_endpoint = [
+    proccess_endpoints = [
         {
             "tab_id": "tab2",
-            "tab_name": "Process PDF",
-            "action_url": "/process/pdf",
+            "tab_name": "Process File - Standard",
+            "action_url": "/process/file",
             "form_data": default_form_data,
         },
         {
             "tab_id": "tab3",
-            "tab_name": "Process Home",
+            "tab_name": "Process Home - Multi page inspection reports",
             "action_url": "/process/home",
             "form_data": default_home_form,
         },
         {
             "tab_id": "tab4",
-            "tab_name": "Process Appliance",
+            "tab_name": "Process Appliance - Images of manufacturer labels",
             "action_url": "/process/appliance",
             "form_data": default_appliance_form,
-        },
-        {
-            "tab_id": "tab5",
-            "tab_name": "Process txt file",
-            "action_url": "/process/txt",
-            "form_data": default_form_data,
-        },
-        {
-            "tab_id": "tab6",
-            "tab_name": "Process plain text",
-            "action_url": "/process/text",
-            "form_data": default_form_data,
         }
     ]
-    
     tabs_b_source = [
         {
             "tab_id": "tab1",
             "tab_name": "Upload File",
             "action_url": "/upload"
         },
-    ] + proccess_endpoint + [
         {
-            "tab_id": "tab7",
-            "tab_name": "Tika OCR",
-            "action_url": "/process/tika"
+            "tab_id": "tab5",
+            "tab_name": "OCR - Extract Text from files",
+            "action_url": "/process/ocr",
         },
         {
-            "tab_id": "tab8",
-            "tab_name": "Clear Uploads",
+            "tab_id": "tab6",
+            "tab_name": "Tasks",
+            "action_url": "/tasks"
+        },
+        {
+            "tab_id": "tab7",
+            "tab_name": "Clear Tasks and files",
             "action_url": "/clear"
         }
     ]
     
+    tabs_all = tabs_b_source + proccess_endpoints
+    
     tab_buttons = "".join(
-        tab_button.format(tab_id=tab["tab_id"], tab_name=tab["tab_name"]) for tab in tabs_b_source
-    )
-
-    
-    tabs = "".join(
-        process_form.format(
-            tab_id=tab["tab_id"],
-            tab_name=tab["tab_name"],
-            action_url=tab["action_url"],
-            form_data=tab["form_data"] if "form_data" in tab else ""
-        ) for tab in proccess_endpoint
+        tab_button.format(tab_id=tab["tab_id"], tab_name=tab["tab_name"]) for tab in tabs_all
     )
     
-    tabs_all = upload_form + tabs + tika_process + clear_uploads
+    process_endpoints = [process_form.format(**endpoint) for endpoint in proccess_endpoints]
+    
+    tabs_b_source = [
+        file_upload_tab(tabs_b_source[0]),
+        file_upload_tab(tabs_b_source[1]),
+        button_tab(tabs_b_source[2]),
+        button_tab(tabs_b_source[3])
+    ]
     
     body_content = tab_container.format(tab_buttons=tab_buttons, tabs=tabs_all)
     javascript_code = script_show_tab + script_form + script_file_upload + script_clear_uploads

@@ -4,6 +4,7 @@ import json
 from dotenv import load_dotenv
 import ollama
 from outlines import from_ollama, Generator
+from ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch
 
 load_dotenv()
 
@@ -12,6 +13,33 @@ TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
 
 client = ollama.Client()
 model = from_ollama(client, os.getenv("MODEL_NAME", "gemma3:4b"))
+
+def process_file(file_path, schema=example_schema):
+    try:
+        
+        if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp']:
+            # For image files, we can use vision processing
+            # but for now- just try and get text from it with Tika
+            # text = process_vision(file_path)
+            text = process_tika(file_path)
+        else:
+            # For PDF files, use Tika to extract text
+            text = process_tika(file_path)
+            
+        if not text:
+            raise ValueError("No text extracted from the file")
+        
+        if not schema:
+            raise ValueError("Invalid form schema provided")
+        content = fill_form(text, schema)
+        if not content:
+            raise ValueError("No content generated from the form")
+    
+        return content
+    
+    except Exception as e:
+        print(f"Error processing file {file_path}: {e}")
+        raise e
 
 def home_loop(text, schema):
     
