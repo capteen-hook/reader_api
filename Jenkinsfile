@@ -105,63 +105,6 @@ pipeline {
                 }
             }
         }
-        // stage('Tika healthcheck') { # tika doesnt have curl- flask server will curl tika:9998 
-        //     steps {
-        //         script {
-        //         def maxRetries = 20
-        //         def retryCount = 0
-        //         def isHealthy = false
-
-        //         while (retryCount < maxRetries) {
-        //             def status = sh(script: "docker inspect --format='{{.State.Health.Status}}' tika", returnStdout: true).trim()
-        //             echo "Current health status: ${status}"
-
-        //             if (status == "healthy") {
-        //             isHealthy = true
-        //             break
-        //             }
-
-        //             echo "Tika service is not healthy yet: ${sh(script: "docker inspect --format='{{.State.Health.Status}}' tika", returnStdout: true).trim()}"
-
-        //             retryCount++
-        //             sleep 10
-        //         }
-
-        //         if (!isHealthy) {
-        //             error "Tika service failed to become healthy after ${maxRetries} retries."
-        //         }
-        //         }
-        //     }
-        // }
-        stage('RabbitMQ healthcheck') {
-            steps {
-                script {
-                def maxRetries = 20
-                def retryCount = 0
-                def isHealthy = false
-
-                while (retryCount < maxRetries) {
-                    def status = sh(script: "docker inspect --format='{{.State.Health.Status}}' rabbitmq", returnStdout: true).trim()
-                    echo "Current health status: ${status}"
-
-                    if (status == "healthy") {
-                    isHealthy = true
-                    break
-                    }
-
-                    echo "RabbitMQ service is not healthy yet: ${sh(script: "docker inspect --format='{{.State.Health.Status}}' rabbitmq", returnStdout: true).trim()}"
-
-                    retryCount++
-                    sleep 10
-                }
-
-                if (!isHealthy) {
-                    error "RabbitMQ service failed to become healthy after ${maxRetries} retries."
-                }
-                }
-            }
-        }
-    }
     post {
         always {
             sh 'docker compose down'
