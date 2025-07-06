@@ -13,8 +13,6 @@ import json
 import jwt 
 from functools import wraps
 from celery import Celery
-from celery.exceptions import QueueFull
-
 # from flask_server.transformer_vision import process_vision
 from flask_server.tools.web_search import search_tavily
 from flask_server.ai.prompts import fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema
