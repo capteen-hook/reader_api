@@ -23,6 +23,8 @@ services:
       PORT: ${PORT:-8000}
       TAVILY_KEY: ${TAVILY_KEY:-}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
+    volumes:
+      - ./openapi_spec.yaml:/app/flask_server/openapi_spec.yaml
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:${PORT:-8000}/ || exit 1 && curl -f http://tika:9998/tika || exit 1"] # tika container doesnt have curl installed
       interval: 30s
