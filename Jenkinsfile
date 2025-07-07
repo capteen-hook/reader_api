@@ -80,7 +80,8 @@ pipeline {
             steps {
                 script {
 
-                    sh 'chmod +x basic_tests/test.sh'         // fixed path
+                    sh 'chmod +x basic_tests/test.sh'       
+                    sh 'chmod +x basic_tests/routes/crud.sh' 
 
                     echo "Current working directory: ${pwd()}"
                     def output = sh(script: './basic_tests/test.sh', returnStdout: true).trim()
