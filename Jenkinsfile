@@ -111,6 +111,7 @@ pipeline {
                         // run on host
                         // Source the .env file and run docker compose
                         sh '''
+                            #!/bin/bash
                             set -a
                             source .env
                             set +a
