@@ -75,19 +75,19 @@ pipeline {
                 }
             }
         }
-        // stage('Deploy') {
-        //     steps {
-        //         script {
-        //             // Switch to the deploy directory
-        //             dir(DEPLOY_DIR) {
-        //                 // pull the latest changes from the repository
-        //                 sh 'git pull origin main || true' // Use '|| true' to avoid failure if no changes
-        //                 // run on host
-        //                 sh 'docke compose up -d --build'
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Deploy') {
+            steps {
+                script {
+                    // Switch to the deploy directory
+                    dir(DEPLOY_DIR) {
+                        // pull the latest changes from the repository
+                        sh 'git pull origin main || true' // Use '|| true' to avoid failure if no changes
+                        // run on host
+                        sh 'docke compose up -d --build'
+                    }
+                }
+            }
+        }
     }
     post {
         always {
