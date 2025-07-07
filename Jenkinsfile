@@ -47,7 +47,7 @@ pipeline {
         }
         stage('Build with Docker Compose') {
             steps {
-                sh 'docker compose up -p flask_server_test-d --build --remove-orphans'
+                sh 'docker compose -p flask_server_test up -d --build --remove-orphans'
             }
         }
         stage('Flask healthcheck') {
