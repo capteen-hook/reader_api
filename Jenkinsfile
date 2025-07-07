@@ -102,6 +102,16 @@ pipeline {
                     sh 'docker compose down || true' // Use '|| true' to avoid failure if no containers are running
                     // Switch to the deploy directory
                     dir(DEPLOY_DIR) {
+                        // switch out all the test environment variables for the production ones from .env
+                        fileExists('.env') || error "The .env file does not exist in the deploy directory: ${DEPLOY_DIR}"\
+                        for (line in readFile('.env').readLines()) {
+                            def parts = line.split('=')
+                            if (parts.length == 2) {
+                                def key = parts[0].trim()
+                                def value = parts[1].trim()
+                                env[key] = value
+                            }
+                        }
                         // pull the latest changes from the repository
                         sh 'git pull origin main || true' // Use '|| true' to avoid failure if no changes
                         // run on host
