@@ -55,7 +55,7 @@ services:
       WORK_DIR: ${WORK_DIR:-/tmp/workdir}
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
       PORT: ${PORT:-8000}
-      TAVILY_KEY: ${TAVILY_KEY:-}
+      TAVILY_KEY: ${TAVILY_KEY:-none}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
     networks:
       - tika_network
