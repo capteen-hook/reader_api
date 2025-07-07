@@ -15,11 +15,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     
 ENV PATH="/root/.cargo/bin:${PATH}"
 
+# Copy only requirements.txt first to leverage Docker's caching
+COPY ./flask_server/requirements.txt /app/flask_server/requirements.txt
+
+# Install Python dependencies
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r /app/flask_server/requirements.txt
+
+# Copy the rest of the application files
 COPY . /app/flask_server
 COPY ../openapi_spec.yaml /app/flask_server/openapi_spec.yaml
-
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r ./flask_server/requirements.txt
 
 # before launching the server, write out an api key to a file with generate_long_lasting_token in ./flask_server/generate.py
 RUN python -c "from flask_server.generate import generate_long_lasting_token; generate_long_lasting_token()"
