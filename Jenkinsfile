@@ -80,6 +80,8 @@ pipeline {
             steps {
                 script {
                     // echo cwd
+                    sh 'ls -la'
+                    sh 'ls -la basics_tests'
                     echo "Current working directory: ${pwd()}"
                     def output = sh(script: './basics_tests/test.sh', returnStdout: true).trim()
                     def lastLine = output.readLines().last()
