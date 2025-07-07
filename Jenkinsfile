@@ -5,8 +5,8 @@ pipeline {
         DEPLOY_DIR='/var/jenkins_home/workspace/deploy'
 
         OLLAMA_URL='http://host.docker.internal:11434/v1 # ollama on the host machine, natively for performance'
-        TIKA_URL='http://tika:9998/tika # these depend on the container names'
-        RABBITMQ_URL='pyamqp://user:password@localhost// # ^'
+        TIKA_URL='http://host.docker.internal:9998/tika # these depend on the container names'
+        RABBITMQ_URL='pyamqp://user:password@host.docker.internal// # ^'
         PORT='8000'
         TRANSFORMERS_CACHE='./cache'
         WORK_DIR='./workdir'
@@ -23,7 +23,7 @@ pipeline {
         TIKA_CONFIG_FILE='./tika-config.xml'
         RABBITMQ_IMAGE='rabbitmq:management'
         RABBITMQ_CONTAINER_NAME='rabbitmq-default'
-        RABBITMQ_HOST='localhost'
+        RABBITMQ_HOST='host.docker.internal'
         RABBITMQ_PORT_1='5672'
         RABBITMQ_PORT_2='15672'
         RABBITMQ_DEFAULT_USER='user'
@@ -84,7 +84,7 @@ pipeline {
                     sh 'chmod +x basic_tests/routes/crud.sh' 
 
                     echo "Current working directory: ${pwd()}"
-                    def output = sh(script: 'bash ./basic_tests/test.sh', returnStdout: true).trim()
+                    def output = sh(script: 'bash ./basic_tests/test.sh host.docker.internal:8000', returnStdout: true).trim()
                     def lastLine = output.readLines().last()
                     if (lastLine != "All tests passed!") {
                         error "Tests failed: ${lastLine}"

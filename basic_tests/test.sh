@@ -4,7 +4,12 @@
 current_dir=$(dirname "$0")
 source "${current_dir}/routes/crud.sh"
 
-url="http://localhost:8000"
+url=$1
+
+if [[ -z "${url}" ]]; then
+    url="http://localhost:8000"
+fi
+
 auth_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsImV4cCI6MjA2NzIxMjg3NX0.mF5-1ILTbi2S6nbDX36heDr-3NH7LdVhxr4B3QWnN0E" 
 echo "Running basic tests against ${url}"
 
