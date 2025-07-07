@@ -4,7 +4,7 @@ import json
 from dotenv import load_dotenv
 import ollama
 from outlines import from_ollama, Generator
-from ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch
+from flask_server.ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch
 
 load_dotenv()
 
@@ -91,8 +91,13 @@ def process_tika(file_path):
         content_type = 'application/pdf'
     elif file_path.endswith('.png') or file_path.endswith('.jpg') or file_path.endswith('.jpeg'):
         content_type = 'image/' + file_path.split('.')[-1]
+    elif file_path.endswith('.txt') or file_path.endswith('.md') or file_path.endswith('.csv') or file_path.endswith('.json') or file_path.endswith('.yaml'):
+        # no need for tika
+        print("Processing text file directly without ocr")
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return f.read()
     else:
-        raise ValueError("Unsupported file type. Only PDF and image files are supported.")
+        raise ValueError("Unsupported file type. Only PDF and image, and text files are supported.")
             
             
     headers = {

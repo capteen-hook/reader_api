@@ -1,7 +1,9 @@
-
 import os
+import jwt
 from dotenv import load_dotenv
 from flask_server.ai.prompts import example_schema
+from outlines.types import JsonSchema
+from werkzeug.utils import secure_filename
 
 load_dotenv()
 
@@ -17,7 +19,7 @@ def validate_file(filename):
 
         # Sanitize filename
         filename = secure_filename(filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file_path = os.path.join(os.getenv('WORK_DIR', './work_dir') + '/uploads', filename)
 
         # Check if file exists
         if not os.path.exists(file_path):
@@ -65,10 +67,9 @@ def upload_file(file):
             raise ValueError("No file part in the request")
         
         filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file_path = os.path.join(os.getenv('WORK_DIR', './work_dir') + '/uploads', filename)
         file.save(file_path)
         
-        print(f"File {filename} uploaded successfully to {file_path}")
         return file_path
     
     except Exception as e:

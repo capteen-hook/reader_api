@@ -3,6 +3,7 @@ services:
     build:
       context: ./flask_server
       dockerfile: Dockerfile
+    image: ${FLASK_SERVER_IMAGE:-flask_server:latest}
     container_name: ${FLASK_SERVER_CONTAINER_NAME:-flask_server}
     depends_on:
       - tika
@@ -31,6 +32,29 @@ services:
       timeout: 10s
       retries: 5
       start_period: 10s
+
+  worker:
+    image: ${WORKER_IMAGE:-flask_server:latest}
+    container_name: ${WORKER_CONTAINER_NAME:-flask_worker}
+    depends_on:
+      - flask_server
+      - tika
+      - rabbitmq
+    restart: always
+    command: celery -A flask_server.celery worker --loglevel=info
+    environment:
+      TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
+      RABBITMQ_URL: ${RABBITMQ_URL:-http://rabbitmq:15672/api/}
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434/}
+      POPPLER_PATH: ${POPPLER_PATH:-}
+      TRANSFORMERS_CACHE: ${TRANSFORMERS_CACHE:-/tmp/transformers_cache}
+      WORK_DIR: ${WORK_DIR:-/tmp/workdir}
+      MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
+      PORT: ${PORT:-8000}
+      TAVILY_KEY: ${TAVILY_KEY:-}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
+    networks:
+      - tika_network
 
   tika:
     image: ${TIKA_IMAGE:-apache/tika:latest-full}

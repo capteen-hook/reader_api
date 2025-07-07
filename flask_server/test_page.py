@@ -23,11 +23,11 @@ boilerplate = """
 """
 
 tab_container = """
-<div style="display: flex; flex-direction: column; align-items: center; margin-top: 50px;">
-    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+<div style="text-align: center; margin-top: 20px; margin-left: auto; margin-right: auto; width: 80%; position: relative; z-index: 0;">
+    <div style="margin-bottom: 20px; position: relative; z-index: 3;">
         {tab_buttons}
     </div>
-    <div style="width: 80%; max-width: 800px; border: 1px solid #ccc; padding: 20px; border-radius: 5px;">
+    <div style="margin-left: auto; margin-right: auto; width: 80%; border: 1px solid #ccc; padding: 20px; border-radius: 5px;">
     {tabs}
     </div>
 </div>
@@ -38,7 +38,7 @@ tab_button = """
 """
 
 process_form = """
-<div id="{tab_id}" style="display: none;">
+<div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
     <h2>{tab_name}</h2>
     <form class="process-form" action="{action_url}" method="post">
     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
@@ -47,26 +47,12 @@ process_form = """
     <br>
     <input type="submit" value="Process File">
     </form>
-    
-</div>
-"""
-
-# this is different because the enctype must be multipart/form-data
-upload_form = """  
-<div id="tab1" style="display:block;">
-    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
-    <h2>Upload File</h2>
-    <input type="file" name="file" required>
-    <input type="text" name="auth" placeholder="Enter authentication token" required>
-    <br>
-    <input type="submit" value="Upload File">
-    </form>
 </div>
 """
 
 # this doesnt need a form field- just a filename
 tika_process = """
-<div id="tab7" style="display:none;">
+<div id="tab7" style="display:none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
     <h2>Tika OCR</h2>
     <form class="process-form" action="/process/tika" method="post">
     <input type="text" name="filename" placeholder="Enter uploaded filename" required>
@@ -79,7 +65,7 @@ tika_process = """
 
 # this just sends a get request to clear the uploads
 clear_uploads = """
-<div id="tab8" style="display:none;">
+<div id="tab8" style="display:none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
     <h2>Clear Uploads</h2>
     <form action="/clear" method="get" id="clearUploadsForm">
     <input type="text" name="auth" placeholder="Enter authentication token" required>
@@ -101,6 +87,7 @@ script_form = """
 document.querySelectorAll('.process-form').forEach(form => {
     form.addEventListener('submit', function(event) {
         event.preventDefault(); // Prevent default form submission
+        console.log('Form submitted:', this); // Log the form for debugging
         const formData = new FormData(this);
         const jsonData = {};
 
@@ -141,77 +128,133 @@ document.querySelectorAll('.process-form').forEach(form => {
 });
 """
 
+script_button_auth = """
+document.querySelectorAll('.button-form-auth').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        console.log('Form submitted:', this); // Log the form for debugging
+        event.preventDefault(); // Prevent default form submission
+        const formData = new FormData(this);
+        const authToken = formData.get('auth');
+        if (!authToken) {
+            alert('Authorization token is missing!');
+            return;
+        }
+        fetch(this.action, {
+            method: this.method,
+            headers: {
+                'Authorization': 'Bearer ' + authToken
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(JSON.stringify(data, null, 2)); // Display response data
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    });
+});
+"""
+
+script_button_noauth = """
+document.querySelectorAll('.button-form-noauth').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        console.log('Form submitted:', this); // Log the form for debugging
+        event.preventDefault(); // Prevent default form submission
+        fetch(this.action, {
+            method: this.method
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(JSON.stringify(data, null, 2)); // Display response data
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    });
+});
+"""
+
 script_file_upload = """
-document.getElementById('uploadForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent the default form submission
-    const formData = new FormData(this);
-
-    // Retrieve the auth token from the form data
-    const authToken = formData.get('auth');
-    if (!authToken) {
-        alert('Authorization token is missing!');
-        return;
-    }
-
-    fetch(this.action, {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + authToken // Include auth token in headers
-        },
-        body: formData // Send the FormData directly
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+document.querySelectorAll('.upload-form').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        console.log('Form submitted:', this); // Log the form for debugging
+        event.preventDefault(); // Prevent default form submission
+        const formData = new FormData(this);
+        const authToken = formData.get('auth');
+        if (!authToken) {
+            alert('Authorization token is missing!');
+            return;
         }
-        return response.json();
-    })
-    .then(data => {
-        alert(JSON.stringify(data, null, 2));
-    })
-    .catch(error => {
-        alert('Error: ' + error.message);
+        fetch(this.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authToken // Include auth token in headers         
+            },
+            body: formData // Send FormData object as request body
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(JSON.stringify(data, null, 2)); // Display response data
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
     });
 });
 """
+        
+# script_clear_uploads = """
+# document.getElementById('clearUploadsForm').addEventListener('submit', function(event) {
+#     event.preventDefault(); // Prevent the default form submission
+#     const formData = new FormData(this);
+#     // Retrieve the auth token from the form data
+#     const authToken = formData.get('auth');
+#     if (!authToken) {
+#         alert('Authorization token is missing!');
+#         return;
+#     }
+#     fetch(this.action, {
+#         method: 'GET',
+#         headers: {
+#             'Authorization': 'Bearer ' + authToken // Include auth token in headers
+#         }
+#     })
+#     .then(response => {
+#         if (!response.ok) {
+#             throw new Error(`HTTP error! status: ${response.status}`);
+#         }
+#         return response.json();
+#     })
+#     .then(data => {
+#         alert(JSON.stringify(data, null, 2));
+#     })
+#     .catch(error => {
+#         alert('Error: ' + error.message);
+#     });
+# });
+# """
 
-script_clear_uploads = """
-document.getElementById('clearUploadsForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent the default form submission
-    const formData = new FormData(this);
-    // Retrieve the auth token from the form data
-    const authToken = formData.get('auth');
-    if (!authToken) {
-        alert('Authorization token is missing!');
-        return;
-    }
-    fetch(this.action, {
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + authToken // Include auth token in headers
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        alert(JSON.stringify(data, null, 2));
-    })
-    .catch(error => {
-        alert('Error: ' + error.message);
-    });
-});
-"""
-
-def file_upload_tab(tab_info):
-    # similiar to process form but no text area for form data
-    return f"""
-<div id="{tab_info['tab_id']}" style="display: none;">
-    <h2>{tab_info['tab_name']}</h2>
-    <form class="upload-form" action="{tab_info['action_url']}" method="post" enctype="multipart/form-data">
+file_upload_form = """
+<div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
+    <h2>{tab_name}</h2>
+    <form class="upload-form" action="{action_url}" method="post" enctype="multipart/form-data">
     <input type="file" name="file" required>
     <input type="text" name="auth" placeholder="Enter authentication token" required>
     <br>
@@ -220,17 +263,51 @@ def file_upload_tab(tab_info):
 </div>
 """
 
-def button_tab(tab_info):
-    return f"""
-<div id="{tab_info['tab_id']}" style="display: none;">
-    <h2>{tab_info['tab_name']}</h2>
-    <form action="{tab_info['action_url']}" method="post">
+button_form_auth = """
+<div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
+    <h2>{tab_name}</h2>
+    <form action="{action_url}" method="{method}" class="button-form-auth">
     <input type="text" name="auth" placeholder="Enter authentication token" required>
     <br>
-    <input type="submit" value="{tab_info['tab_name']}">
+    <input type="submit" value="{tab_name}">
     </form>
 </div>
 """
+
+button_form_noauth = """
+<div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
+    <h2>{tab_name}</h2>
+    <form action="{action_url}" method="{method}" class="button-form-noauth">
+    <input type="submit" value="{tab_name}">
+    </form>
+</div>
+"""
+
+def file_upload_tab(tab_info):
+    # similiar to process form but no text area for form data
+    return file_upload_form.format(
+        tab_id=tab_info["tab_id"],
+        tab_name=tab_info["tab_name"],
+        action_url=tab_info["action_url"]
+    )
+
+def button_tab(tab_info, auth=True, method='post'):
+    if auth:
+        return button_form_auth.format(
+            tab_id=tab_info["tab_id"],
+            tab_name=tab_info["tab_name"],
+            action_url=tab_info["action_url"],
+            method=method
+        )            
+    elif not auth:
+        return button_form_noauth.format(
+            tab_id=tab_info["tab_id"],
+            tab_name=tab_info["tab_name"],
+            action_url=tab_info["action_url"],
+            method=method
+        )
+    else:
+        return '<div>man i dont even know</div>'
 
 def ollama_active_element(ollama_active):
     if ollama_active:
@@ -291,8 +368,8 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
     tabs_b_source = [
         {
             "tab_id": "tab1",
-            "tab_name": "Upload File",
-            "action_url": "/upload"
+            "tab_name": "Docs",
+            "action_url": "/docs",
         },
         {
             "tab_id": "tab5",
@@ -320,14 +397,19 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
     process_endpoints = [process_form.format(**endpoint) for endpoint in proccess_endpoints]
     
     tabs_b_source = [
-        file_upload_tab(tabs_b_source[0]),
+        button_tab(tabs_b_source[0], auth=False, method='get'),  # Docs tab does not need auth
         file_upload_tab(tabs_b_source[1]),
-        button_tab(tabs_b_source[2]),
-        button_tab(tabs_b_source[3])
+        button_tab(tabs_b_source[2], auth=True, method='get'),  # Tasks tab requires auth
+        button_tab(tabs_b_source[3], auth=True, method='post')  # Clear tab requires auth
     ]
     
+    tabs_b_source[0] = tabs_b_source[0].replace('display: none;', 'display: block;')  # Show the first tab by default
+    
+    tabs_all = "".join(process_endpoints + tabs_b_source)
+
+        
     body_content = tab_container.format(tab_buttons=tab_buttons, tabs=tabs_all)
-    javascript_code = script_show_tab + script_form + script_file_upload + script_clear_uploads
+    javascript_code = script_show_tab + script_form + script_file_upload + script_button_auth + script_button_noauth
     css_code = ""
     
     return boilerplate.format(

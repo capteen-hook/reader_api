@@ -1,11 +1,9 @@
 # server.py
-from flask import Flask, jsonify, request
-from werkzeug.utils import secure_filename
+from flask import Flask, jsonify, request, make_response
 import requests
 import os
 from dotenv import load_dotenv
 from outlines import from_ollama, Generator
-from outlines.types import JsonSchema
 import ollama
 import gc
 from bs4 import BeautifulSoup
@@ -32,10 +30,10 @@ app.config['PROCESSING_FOLDER'] = os.getenv('WORK_DIR', './work_dir') + '/proces
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['PROCESSING_FOLDER'], exist_ok=True)
 
-capp = Celery('tasks', broker=os.getenv('RABBITMQ_URL', 'http://localhost:5672/'))
+capp = Celery('tasks', broker=os.getenv('RABBITMQ_URL', 'pyamqp://user:password@localhost//'))
 # Configure Celery to store task results
 capp.conf.update(
-    result_backend=os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0'),
+    result_backend=os.getenv('CELERY_RESULT_BACKEND', 'rpc://'),
     task_annotations={
         '*': {'rate_limit': '10/s'}  # Example rate limit
     },
@@ -71,7 +69,7 @@ def queue_full():
         return total_tasks >= MAX_TASKS
     except Exception as e:
         print(f"Error checking task queue: {e}")
-        return False
+        return True 
     
 @app.before_request
 def verify_api_key():
@@ -87,7 +85,6 @@ def verify_api_key():
     # Remove "Bearer " prefix if present
     if token.startswith("Bearer "):
         token = token.split("Bearer ")[1]
-    print(f"Token: {token}")
     decoded = verify_jwt(token)
     if not decoded:
         print("Invalid or expired token")
@@ -100,11 +97,12 @@ def process_file_default():
             print("Task queue is full, cannot enqueue file processing task")
             return jsonify({"error": "Task queue is full"}), 503
         
-        file_path = upload_file(request.form.get('file'))
+        file_path = upload_file(request.files.get('file'))
         schema = validate_form(request.form.get('form'), example_schema)
         
+        print(f"Enqueuing file processing task for file: {file_path} with schema: {schema}")
         id = process_file_task.apply_async(args=[file_path, schema])
-        return jsonify({"task_id": id.id}), 202
+        return jsonify({"task_id": id.id}), 200
     except Exception as e:
         print(f"Error enqueuing file processing task: {e}")
         return jsonify({"error": str(e)}), 500
@@ -117,11 +115,12 @@ def process_home_report():
             print("Task queue is full, cannot enqueue file processing task")
             return jsonify({"error": "Task queue is full"}), 503
         
-        file_path = upload_file(request.form.get('file'))
+        file_path = upload_file(request.files.get('file'))
         schema = validate_form(request.form.get('form'), default_home_form)
         
         id = process_home_task.apply_async(args=[file_path, schema])
-        return jsonify({"task_id": id.id}), 202
+        print(f"Enqueued home report processing task with ID: {id.id}")
+        return jsonify({"task_id": id.id}), 200
     
     except Exception as e:
         print(f"Error enqueuing home report processing task: {e}")
@@ -134,12 +133,13 @@ def process_appliance_photo():
             print("Task queue is full, cannot enqueue file processing task")
             return jsonify({"error": "Task queue is full"}), 503
         
-        file_path = upload_file(request.form.get('file'))
+        file_path = upload_file(request.files.get('file'))
         schema = validate_form(request.form.get('form'), default_appliance_form)
         # WIP!
         # process_appliance_task.apply_async(args=[file_path, default_appliance_form])
         id = process_file_task.apply_async(args=[file_path, default_appliance_form])
-        return jsonify({"task_id": id.id}), 202
+        print(f"Enqueued appliance photo processing task with ID: {id.id}")
+        return jsonify({"task_id": id.id}), 200
 
     except Exception as e:
         print(f"Error enqueuing appliance photo processing task: {e}")
@@ -223,6 +223,9 @@ def docs():
     try:
         with open('flask_server/openapi_spec.yaml', 'r') as f: 
             openapispec = f.read()
+        res = make_response(openapispec)
+        res.mimetype = 'text/yaml'
+        return res, 200
     except FileNotFoundError:
         return jsonify({"error": "OpenAPI specification file not found"}), 404
     except Exception as e:

@@ -66,7 +66,7 @@ def process_vision_multiple(file_path, schema):
 
     if file_path.lower().endswith('.pdf'):
         # conver to list of images
-        imagenames = convert_pdf_to_images(file_path, output_dir=app.config['PROCESSING_FOLDER'])
+        imagenames = convert_pdf_to_images(file_path, output_dir=os.getenv('WORK_DIR', './work_dir') + '/processing')
     else:
         # file is an image
         imagenames = [file_path]
