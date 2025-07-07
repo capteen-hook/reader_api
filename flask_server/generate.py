@@ -3,9 +3,8 @@ import datetime
 import os
 from dotenv import load_dotenv
 
-print(load_dotenv(dotenv_path='.env', override=True))
 # Secret key for signing the token
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key") 
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your_key_here") 
 # Generate a token with a long expiration date
 def generate_long_lasting_token():
     payload = {
@@ -15,7 +14,8 @@ def generate_long_lasting_token():
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
     return token
 
-print("Generating token: " + SECRET_KEY)
-# Generate and print the token
-token = generate_long_lasting_token()
-print("Long-lasting token:", token)
+if __name__ == "__main__":
+    print("Generating token: " + SECRET_KEY)
+    # Generate and print the token
+    token = generate_long_lasting_token()
+    print("Long-lasting token:", token)

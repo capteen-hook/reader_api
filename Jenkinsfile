@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DEPLOY_DIR='/var/jenkins_home/workspace/deploy'
+        API_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsImV4cCI6MjA2NzI2MjQ3OX0.Z9PJ3KvXw6YoliABvwi5lxM8u2T7ovtuCAoIxTL4Kgo'
 
         OLLAMA_URL='http://host.docker.internal:11434/v1 # ollama on the host machine, natively for performance'
         TIKA_URL='http://host.docker.internal:9998/tika # these depend on the container names'
@@ -84,7 +85,7 @@ pipeline {
                     sh 'chmod +x basic_tests/routes/crud.sh' 
 
                     echo "Current working directory: ${pwd()}"
-                    def output = sh(script: 'bash ./basic_tests/test.sh host.docker.internal:8000', returnStdout: true).trim()
+                    def output = sh(script: 'bash ./basic_tests/test.sh host.docker.internal ${API_KEY}', returnStdout: true).trim()
                     def lastLine = output.readLines().last()
                     if (lastLine != "All tests passed!") {
                         error "Tests failed: ${lastLine}"
