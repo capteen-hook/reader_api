@@ -81,9 +81,9 @@ pipeline {
                 script {
                     // echo cwd
                     sh 'ls -la'
-                    sh 'ls -la basics_tests'
+                    sh 'ls -la basic_tests'
                     echo "Current working directory: ${pwd()}"
-                    def output = sh(script: './basics_tests/test.sh', returnStdout: true).trim()
+                    def output = sh(script: './basic_tests/test.sh', returnStdout: true).trim()
                     def lastLine = output.readLines().last()
                     if (lastLine != "All tests passed!") {
                         error "Tests failed: ${lastLine}"
