@@ -57,7 +57,7 @@ pipeline {
                 def isHealthy = false
 
                 while (retryCount < maxRetries) {
-                    def status = sh(script: "docker inspect --format='{{.State.Health.Status}}' flask_server", returnStdout: true).trim()
+                    def status = sh(script: "docker inspect --format='{{.State.Health.Status}}' ${FLASK_SERVER_CONTAINER_NAME}", returnStdout: true).trim()
                     echo "Current health status: ${status}"
 
                     if (status == "healthy") {
@@ -65,8 +65,7 @@ pipeline {
                     break
                     }
 
-                    echo "Flask service is not healthy yet: ${sh(script: "docker inspect --format='{{.State.Health.Status}}' flask_server", returnStdout: true).trim()}"
-
+                    echo "Flask service is not healthy yet: ${sh(script: "docker inspect --format='{{.State.Health.Status}}' ${FLASK_SERVER_CONTAINER_NAME}", returnStdout: true).trim()}. Retrying in 10 seconds..."
                     retryCount++
                     sleep 10
                 }
@@ -80,6 +79,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
+                    // echo cwd
+                    echo "Current working directory: ${pwd()}"
                     def output = sh(script: './basics_tests/test.sh', returnStdout: true).trim()
                     def lastLine = output.readLines().last()
                     if (lastLine != "All tests passed!") {
