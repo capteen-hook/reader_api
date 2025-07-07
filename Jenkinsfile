@@ -115,7 +115,13 @@ pipeline {
                         // pull the latest changes from the repository
                         sh 'git pull origin main || true' // Use '|| true' to avoid failure if no changes
                         // run on host
-                        sh 'docker compose up -d --build'
+                        // Source the .env file and run docker compose
+                        sh '''
+                            set -a
+                            source .env
+                            set +a
+                            docker compose up -d --build
+                        '''
                     }
                 }
             }
