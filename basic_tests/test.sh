@@ -25,6 +25,8 @@ file1="${current_dir}/pizza_recipe.txt"
 file2="${current_dir}/pizza_recipe.pdf"
 file3="${current_dir}/pizza_recipe.png"
 
+ls -la ${current_dir}/openapi_spec.yaml
+
 get_noauth "${url}/"
 
 get_noauth "${url}/docs"
