@@ -103,7 +103,9 @@ pipeline {
                     // Switch to the deploy directory
                     dir(DEPLOY_DIR) {
                         // switch out all the test environment variables for the production ones from .env
-                        fileExists('.env') || error "The .env file does not exist in the deploy directory: ${DEPLOY_DIR}"
+                        if (!fileExists('.env')) {
+                            error("The .env file does not exist in the deploy directory: ${DEPLOY_DIR}")
+                        }
                         // pull the latest changes from the repository
                         sh 'git pull origin main || true' // Use '|| true' to avoid failure if no changes
                         // run on host
