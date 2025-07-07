@@ -110,13 +110,7 @@ pipeline {
                         sh 'git pull origin main || true' // Use '|| true' to avoid failure if no changes
                         // run on host
                         // Source the .env file and run docker compose
-                        sh '''
-                            #!/bin/bash
-                            set -a
-                            source .env
-                            set +a
-                            docker compose up -d --build
-                        '''
+                        sh 'bash -c "set -a && source .env && set +a && docker compose up -d --build"'
                     }
                 }
             }
