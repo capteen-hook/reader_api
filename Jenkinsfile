@@ -85,7 +85,7 @@ pipeline {
                     sh 'chmod +x basic_tests/routes/crud.sh' 
 
                     echo "Current working directory: ${pwd()}"
-                    def output = sh(script: 'bash ./basic_tests/test.sh host.docker.internal ${API_KEY}', returnStdout: true).trim()
+                    def output = sh(script: 'bash ./basic_tests/test.sh http://host.docker.internal:${PORT} ${API_KEY}', returnStdout: true).trim()
                     def lastLine = output.readLines().last()
                     if (lastLine != "All tests passed!") {
                         error "Tests failed: ${lastLine}"
