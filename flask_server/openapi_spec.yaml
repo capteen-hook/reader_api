@@ -1,0 +1,382 @@
+openapi: 3.0.4
+info:
+  title: File Reader API
+  description: Send files to the server and receive their content in a structured format.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000 # Still in dev
+tags:
+  - name: file
+    description: Operations related to file uploads
+  - name: processing
+    description: Operations related to processing uploaded files
+  - name: Home
+    description: Operations related to processing home inspection reports
+  - name: Appliance
+    description: Operations related to processing appliance manufacturer plates
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Form:
+      type: object
+      additionalProperties: true
+      description: >
+        A JSON schema object that specifies which fields to extract from the file.
+      example: 
+        {
+          "$$defs": {
+              "Status": {
+                  "enum": ["success", "failure"],
+                  "title": "Status",
+                  "type": "string"
+              }
+          },
+          "properties": {
+              "status": {
+                  "$$ref": "#/$defs/Status"
+              },
+              "response": {
+                  "type": "string"
+              }
+          },
+          "required": ["status", "response"],
+          "title": "Structured Response",
+          "type": "object"
+        }
+    HomeForm:
+      type: object
+      additionalProperties: true
+      description: >
+        A JSON schema object that specifies which fields to extract from a home inspection report.
+        Routes that use a Home form will try to use additional location services to fill in missing information if possible.
+      example:
+        {
+          "properties": {
+            "address": {
+                "type": "string"
+            },
+            "bedrooms": {
+                "type": "integer"
+            },
+            "bathrooms": {
+                "type": "integer"
+            },
+            "square_footage": {
+                "type": "integer"
+            },
+            "year_built": {
+                "type": "integer"
+            },
+            "type": {
+                "type": "string"
+            },
+            "stories": {
+                "type": "integer"
+            },
+            "basement": {
+                "type": "boolean"
+            },
+            "garage": {
+                "type": "boolean"
+            },
+            "pool": {
+                "type": "boolean"
+            },
+            "roof_type": {
+                "type": "string"
+            },
+            "location": {
+                "type": "string"
+            }
+        },
+        "required": ["address", "type"],
+        "title": "Home",
+        "type": "object"
+      }
+    ApplianceForm:
+      type: object
+      additionalProperties: true
+      description: >
+        A JSON schema object that specifies which fields to extract from a photo of an appliance manufacturer plate.
+        Routes that use an Appliance form will try to use additional manufacturer services to fill in missing information if possible.
+      example:
+        {
+          "serial_number": {
+              "type": "string"
+          },
+          "model_number": {
+              "type": "string"
+          },
+          "manufacturer": {
+              "type": "string"
+          },
+          "manufacture_date": {
+              "type": "string",
+              "format": "date"
+          },
+          "type": {
+              "type": "string"
+          }
+        }
+    Task:
+      type: object
+      description: >
+        A task that has been queued for processing.
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the task
+        status:
+          type: string
+          description: The current status of the task (e.g., 'queued', 'processing', 'completed', 'failed')
+        result:
+          oneOf:
+            - type: object
+              additionalProperties: true
+              description: The structured result of the processed file, if available
+            - type: string
+              description: The raw text content of the file, if available
+        error:
+          type: string
+          description: An error message if the task failed
+      required:
+        - id
+paths:
+  /:
+    get:
+      summary: Root endpoint
+      description: This is the root endpoint of the File Reader API. It can be used to check if the server is running, and test the API.
+      responses:
+        '200':
+          description: Server is running
+          content:
+            text/html:
+              schema:
+                type: string
+                example: '<h1>File Reader API is running</h1>'
+  /docs:
+    get:
+      summary: API Documentation
+      description: Access the rendered OpenAPI documentation for the File Reader API.
+      responses:
+        '200':
+          description: Successful response with API documentation
+          content:
+            text/html:
+              schema:
+                type: string
+                example: '<h1>File Reader API Documentation</h1>'
+  /process/file:
+    post:
+      tags:
+        - processing
+        - file
+      summary: Upload and process a file
+      description: Upload a file and process it immediately.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                form:
+                  $ref: '#/components/schemas/Form'
+      responses:
+        '200':
+          description: Successful file upload and task creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token  
+  /process/home:
+    post:
+      tags:
+        - home
+        - file
+      summary: Upload and process a home inspection report
+      description: Upload a home inspection report and process it immediately. Uses a default home form if no form is provided.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                form:
+                  $ref: '#/components/schemas/HomeForm'
+      responses:
+        '200':
+          description: Successful file upload and task creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /process/appliance:
+    post:
+      tags:
+        - appliance
+        - file
+      summary: Upload and process a photo of an appliance manufacturer plate
+      description: Upload a photo of an appliance manufacturer plate and process it immediately. Uses a default appliance form if no form is provided.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                form:
+                  $ref: '#/components/schemas/ApplianceForm'
+      responses:
+        '200':
+          description: Successful file upload and task creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /process/ocr:
+    post:
+      tags:
+        - processing
+        - file
+      summary: Upload and process a file for OCR
+      description: Upload a file and process it immediately for OCR. Returns the raw text content, unformatted.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Successful file upload and task creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /tasks:
+    get:
+      tags:
+        - processing
+      summary: Retrieve current task status and queue length
+      description: Get the current status of tasks in the queue, including their IDs, statuses, and results if available.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved task status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /tasks/{task_id}:
+    get:
+      tags:
+        - processing
+      summary: Retrieve a specific task status
+      description: Get the status of a specific task by its ID, including its current status and result if available.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The unique identifier for the task
+      responses:
+        '200':
+          description: Successfully retrieved task status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Task not found
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /clear:
+    post:
+      tags:
+        - file
+      summary: Manually clear the uploaded files and tasks, and cancel the current task.
+      description: Clear all uploaded files and tasks from the server. This is useful for testing and development purposes.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully cleared uploaded files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files_cleared:
+                    type: integer
+                    description: The number of files cleared from the server
+                  tasks_cleared:
+                    type: integer
+                    description: The number of tasks cleared from the server
+        '500':
+          description: Internal server error
