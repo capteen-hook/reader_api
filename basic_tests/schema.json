@@ -1,0 +1,20 @@
+{
+    "$defs": {
+        "Status": {
+            "enum": ["success", "failure"],
+            "title": "Status",
+            "type": "string"
+        }
+    },
+    "properties": {
+        "status": {
+            "$ref": "#/$defs/Status"
+        },
+        "response": {
+            "type": "string"
+        }
+    },
+    "required": ["status", "response"],
+    "title": "Structured Response",
+    "type": "object"
+}

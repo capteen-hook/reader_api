@@ -2,39 +2,17 @@ pipeline {
     agent any
 
     environment {
-        OLLAMA_URL='http://host.docker.internal:11434/v1 # ollama on the host machine, natively for performance'
-        TIKA_URL='http://tika:9998/tika # these depend on the container names'
-        RABBITMQ_URL='http://rabbitmq:15672/api # ^'
+        DEPLOY_DIR='/var/jenkins_home/workspace/deploy'
 
-        PORT='8000'
-
-        TRANSFORMERS_CACHE='./cache'
-        WORK_DIR='./workdir'
-
-        MODEL_NAME='gemma3:4b'
-
-        POPPLER_PATH='none'
-
-        LIGHTWEIGHT_MODE='True # not used currently'
-
-        JWT_SECRET_KEY='none'
-        TAVILY_KEY='none'
-
-        FLASK_SERVER_CONTAINER_NAME='flask_server'
-
-        TIKA_IMAGE='apache/tika:latest-full'
-        TIKA_CONTAINER_NAME='tika'
-        TIKA_PORT='9998'
-        TIKA_CONFIG_FILE='./tika-config.xml'
-
-        RABBITMQ_IMAGE='rabbitmq:management'
-        RABBITMQ_CONTAINER_NAME='rabbitmq'
-        RABBITMQ_PORT_1='5672'
-        RABBITMQ_PORT_2='15672'
-        RABBITMQ_DEFAULT_USER='user'
-        RABBITMQ_DEFAULT_PASS='password'
+        // use the env variables from .env.template
+        for (line in readFile('.env.template').readLines()) {
+            // set each line as an environment variable
+            def (key, value) = line.split('=')
+            if (key && value) {
+                env[key.trim()] = value.trim()
+            }
+        }
     }
-
     stages {
         stage('Clone') {
             steps {
@@ -45,30 +23,8 @@ pipeline {
             steps {
                 script {
                     sh 'rm -rf .env' // Ensure no directory or file named `.env` exists
-                    writeFile file: '.env', text: """
-                        OLLAMA_URL=${OLLAMA_URL}
-                        TIKA_URL=${TIKA_URL}
-                        RABBITMQ_URL=${RABBITMQ_URL}
-                        PORT=${PORT}
-                        TRANSFORMERS_CACHE=${TRANSFORMERS_CACHE}
-                        WORK_DIR=${WORK_DIR}
-                        MODEL_NAME=${MODEL_NAME}
-                        POPPLER_PATH=${POPPLER_PATH}
-                        LIGHTWEIGHT_MODE=${LIGHTWEIGHT_MODE}
-                        JWT_SECRET_KEY=${JWT_SECRET_KEY}
-                        TAVILY_KEY=${TAVILY_KEY}
-                        FLASK_SERVER_CONTAINER_NAME=${FLASK_SERVER_CONTAINER_NAME}
-                        TIKA_IMAGE=${TIKA_IMAGE}
-                        TIKA_CONTAINER_NAME=${TIKA_CONTAINER_NAME}
-                        TIKA_PORT=${TIKA_PORT}
-                        TIKA_CONFIG_FILE=${TIKA_CONFIG_FILE}
-                        RABBITMQ_IMAGE=${RABBITMQ_IMAGE}
-                        RABBITMQ_CONTAINER_NAME=${RABBITMQ_CONTAINER_NAME}
-                        RABBITMQ_PORT_1=${RABBITMQ_PORT_1}
-                        RABBITMQ_PORT_2=${RABBITMQ_PORT_2}
-                        RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-                        RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-                    """
+                    // move the .env.template to .env
+                    sh 'cp .env.template .env'
                 }
             }
         }
@@ -102,6 +58,32 @@ pipeline {
                 if (!isHealthy) {
                     error "Flask service failed to become healthy after ${maxRetries} retries."
                 }
+                }
+            }
+        }
+        stage {
+            name: 'Run Tests'
+            steps {
+                script {
+                    def output = sh(script: './basics_tests/test.sh', returnStdout: true).trim()
+                    def lastLine = output.readLines().last()
+                    if (lastLine != "All tests passed!") {
+                        error "Tests failed: ${lastLine}"
+                    } else {
+                        echo "Tests passed successfully!"
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    // Switch to the deploy directory
+                    dir(DEPLOY_DIR) {
+                        // pull the latest changes from the repository
+                        sh 'git pull origin main || true' // Use '|| true' to avoid failure if no changes
+                        sh 'docker compose up -d --build' // Rebuild and start the containers
+                    }
                 }
             }
         }

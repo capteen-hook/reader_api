@@ -66,6 +66,7 @@ def queue_full():
         active_tasks = capp.control.inspect().active() or {}
         reserved_tasks = capp.control.inspect().reserved() or {}
         total_tasks = sum(len(tasks) for tasks in active_tasks.values()) + sum(len(tasks) for tasks in reserved_tasks.values())
+        print(f"Total tasks in queue: {total_tasks}")
         return total_tasks >= MAX_TASKS
     except Exception as e:
         print(f"Error checking task queue: {e}")

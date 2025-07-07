@@ -16,6 +16,8 @@ services:
     environment:
       TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
       RABBITMQ_URL: ${RABBITMQ_URL:-http://rabbitmq:15672/api/}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434/}
       POPPLER_PATH: ${POPPLER_PATH:-}
       TRANSFORMERS_CACHE: ${TRANSFORMERS_CACHE:-/tmp/transformers_cache}
@@ -41,10 +43,12 @@ services:
       - tika
       - rabbitmq
     restart: always
-    command: celery -A flask_server.celery worker --loglevel=info
+    command: celery -A flask_server.celery:celery worker --loglevel=info
     environment:
       TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
       RABBITMQ_URL: ${RABBITMQ_URL:-http://rabbitmq:15672/api/}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434/}
       POPPLER_PATH: ${POPPLER_PATH:-}
       TRANSFORMERS_CACHE: ${TRANSFORMERS_CACHE:-/tmp/transformers_cache}
