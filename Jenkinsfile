@@ -79,9 +79,9 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // echo cwd
-                    sh 'ls -la'
-                    sh 'ls -la basic_tests'
+
+                    sh 'chmod +x basic_tests/test.sh'         // fixed path
+
                     echo "Current working directory: ${pwd()}"
                     def output = sh(script: './basic_tests/test.sh', returnStdout: true).trim()
                     def lastLine = output.readLines().last()
