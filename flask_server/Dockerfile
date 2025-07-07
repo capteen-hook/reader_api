@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 COPY . /app/flask_server
+COPY ../openapi_spec.yaml /app/flask_server/openapi_spec.yaml
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r ./flask_server/requirements.txt
