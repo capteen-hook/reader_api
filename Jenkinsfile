@@ -3,15 +3,6 @@ pipeline {
 
     environment {
         DEPLOY_DIR='/var/jenkins_home/workspace/deploy'
-
-        // use the env variables from .env.template
-        for (line in readFile('.env.template').readLines()) {
-            // set each line as an environment variable
-            def (key, value) = line.split('=')
-            if (key && value) {
-                env[key.trim()] = value.trim()
-            }
-        }
     }
     stages {
         stage('Clone') {
@@ -61,8 +52,7 @@ pipeline {
                 }
             }
         }
-        stage {
-            name: 'Run Tests'
+        stage('Run Tests') {
             steps {
                 script {
                     def output = sh(script: './basics_tests/test.sh', returnStdout: true).trim()
@@ -83,7 +73,7 @@ pipeline {
                         // pull the latest changes from the repository
                         sh 'git pull origin main || true' // Use '|| true' to avoid failure if no changes
                         // run on host
-                        sh 'docke compose up -d --build'
+                        sh 'docker compose up -d --build'
                     }
                 }
             }
