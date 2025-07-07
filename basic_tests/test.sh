@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# test.sh
 # get crud functions from ./routes/crud.sh
 current_dir=$(dirname "$0")
 source "${current_dir}/routes/crud.sh"

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 is_200() {
     local response="$1"
 
