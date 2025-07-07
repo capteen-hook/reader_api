@@ -98,6 +98,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    // remove the containers if they were put up
+                    sh 'docker compose down || true' // Use '|| true' to avoid failure if no containers are running
                     // Switch to the deploy directory
                     dir(DEPLOY_DIR) {
                         // pull the latest changes from the repository
