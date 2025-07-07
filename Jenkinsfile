@@ -82,7 +82,8 @@ pipeline {
                     dir(DEPLOY_DIR) {
                         // pull the latest changes from the repository
                         sh 'git pull origin main || true' // Use '|| true' to avoid failure if no changes
-                        sh 'docker compose up -d --build' // Rebuild and start the containers
+                        // run on host
+                        sh 'docke compose up -d --build'
                     }
                 }
             }
