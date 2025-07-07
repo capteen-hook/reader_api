@@ -65,9 +65,6 @@ services:
     container_name: ${TIKA_CONTAINER_NAME:-tika}
     ports:
       - "${TIKA_PORT:-9998}:9998"
-    configs:
-      - source: tika_config_3
-        target: /tika-config.xml
     restart: unless-stopped
     volumes:
       - ${TIKA_CONFIG_FILE:-./tika-config.xml}:/tika-config.xml
