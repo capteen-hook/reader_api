@@ -53,7 +53,7 @@ pipeline {
         stage('Flask healthcheck') {
             steps {
                 script {
-                def maxRetries = 20
+                def maxRetries = 10
                 def retryCount = 0
                 def isHealthy = false
 
