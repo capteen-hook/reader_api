@@ -29,7 +29,7 @@ services:
     volumes:
       - ./openapi_spec.yaml:/app/flask_server/openapi_spec.yaml
     healthcheck:  # other containers dont have curl so this does them all
-      test: ["CMD-SHELL", "curl -f http://localhost:${PORT:-8000}/ || exit 1 && curl -f http://${TIKA_CONTAINER_NAME:-tika}:${TIKA_PORT:-9998}/tika || exit 1 && curl -f http://${RABBITMQ_CONTAINER_NAME:-rabbitmq}:${RABBITMQ_PORT_1:-5672}/api/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${PORT:-8000}/ || exit 1 && curl -f http://${TIKA_CONTAINER_NAME:-tika}:${TIKA_PORT:-9998}/tika || exit 1 && curl -f http://${RABBITMQ_CONTAINER_NAME:-rabbitmq}:${RABBITMQ_PORT_2:-15672}/api/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
