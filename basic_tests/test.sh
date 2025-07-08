@@ -13,7 +13,7 @@ fi
 auth_token=$2
 
 if [[ -z "${auth_token}" ]]; then
-    auth_token=""eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsImV4cCI6MjA2NzIxMjg3NX0.mF5-1ILTbi2S6nbDX36heDr-3NH7LdVhxr4B3QWnN0E" "
+    auth_token=""eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsImV4cCI6MjA2NzM3NDE1MX0.yRbfD5ze0ygFPEG8OdcQsL7sO05RfqiRs4GMz8YZScU" "
 fi
 
 echo "Running basic tests against ${url}"
@@ -29,36 +29,36 @@ get_noauth "${url}/"
 
 get_noauth "${url}/docs"
 
-# task_id1=$(post_multipart "${auth_token}" "${url}/process/file" "${file1}" "${schema}") || exit 1
+task_id1=$(post_multipart "${auth_token}" "${url}/process/file" "${file1}" "${schema}") || exit 1
 
-# echo ""
-# echo "Task ID for file1: ${task_id1}"
+echo ""
+echo "Task ID for file1: ${task_id1}"
 
-# task_id2=$(post_multipart "${auth_token}" "${url}/process/home" "${file2}" "${schema}") || exit 1
+task_id2=$(post_multipart "${auth_token}" "${url}/process/home" "${file2}" "${schema}") || exit 1
 
-# echo ""
-# echo "Task ID for file2: ${task_id2}"
+echo ""
+echo "Task ID for file2: ${task_id2}"
 
-# task_id3=$(post_multipart "${auth_token}" "${url}/process/appliance" "${file3}" "${schema}") || exit 1
+task_id3=$(post_multipart "${auth_token}" "${url}/process/appliance" "${file3}" "${schema}") || exit 1
 
-# echo ""
-# echo "Task ID for file3: ${task_id3}"
+echo ""
+echo "Task ID for file3: ${task_id3}"
 
-# post_file "${auth_token}" "${url}/process/ocr" "${file1}" "${schema}"
+post_file "${auth_token}" "${url}/process/ocr" "${file1}" "${schema}"
 
-# post_file "${auth_token}" "${url}/process/ocr" "${file2}" "${schema}"
+post_file "${auth_token}" "${url}/process/ocr" "${file2}" "${schema}"
 
-# post_file "${auth_token}" "${url}/process/ocr" "${file3}" "${schema}"
+post_file "${auth_token}" "${url}/process/ocr" "${file3}" "${schema}"
 
-# get "${auth_token}" "${url}/tasks/${task_id1}"
+get "${auth_token}" "${url}/tasks/${task_id1}"
 
-# get "${auth_token}" "${url}/tasks/${task_id2}"
+get "${auth_token}" "${url}/tasks/${task_id2}"
 
-# get "${auth_token}" "${url}/tasks/${task_id3}"]
+get "${auth_token}" "${url}/tasks/${task_id3}"]
 
-# get "${auth_token}" "${url}/tasks"
+get "${auth_token}" "${url}/tasks"
 
-# post "${auth_token}" "${url}/clear"
+post "${auth_token}" "${url}/clear"
 
 echo " "
 echo "All tests passed!"
