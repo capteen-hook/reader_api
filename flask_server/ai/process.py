@@ -17,7 +17,7 @@ def replace_containerized_path(file_path):
         file_path = file_path.replace(this, with_this)
     return file_path
 
-def get_model():
+def create_ollama_client():
     OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
     # try to request the OLLAMA_URL 
@@ -36,7 +36,7 @@ _model = None
 def get_model():
     global _model
     if _model is None:
-        _model = get_model()
+        _model = create_ollama_client()
         print(f"Model loaded: {_model}", file=sys.stderr)
     return _model
 
