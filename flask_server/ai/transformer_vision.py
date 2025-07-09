@@ -60,6 +60,9 @@ _dtype = None
 
 def get_model():
     global _model
+    global _tf_processor
+    global _device
+    global _dtype
     if _model is None or _tf_processor is None or _device is None or _dtype is None:
         _model, _tf_processor, _device, _dtype = load_model()
         print(f"Model loaded: {_model}", file=sys.stderr)
