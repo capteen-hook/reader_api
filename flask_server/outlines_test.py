@@ -94,6 +94,7 @@ default_home_form = """{
 
 schema = JsonSchema(default_appliance_form)
 
+
 client = ollama.Client()
 model = from_ollama(client,"gemma3:4b")
 
