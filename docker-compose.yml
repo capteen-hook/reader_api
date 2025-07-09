@@ -35,32 +35,32 @@ services:
       retries: 5
       start_period: 10s
 
-  # worker:
-  #   image: ${WORKER_IMAGE:-flask_server:latest}
-  #   container_name: ${WORKER_CONTAINER_NAME:-flask_worker}
-  #   depends_on:
-  #     - flask_server
-  #     - redis
-  #     - tika
-  #     - rabbitmq
-  #   restart: always
-  #   command: celery -A flask_server.celery:celery worker --loglevel=info
-  #   environment:
-  #     TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
-  #     RABBITMQ_URL: ${RABBITMQ_URL:-amqp://user:password@rabbitmq:5672//}
-  #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
-  #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
-  #     OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434/}
-  #     POPPLER_PATH: ${POPPLER_PATH:-}
-  #     MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
-  #     PORT: ${PORT:-8000}
-  #     TAVILY_KEY: ${TAVILY_KEY:-none}
-  #     JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
-  #   networks:
-  #     - tika_network
-  #   volumes:
-  #     - ${WORK_DIR:-./workdir}:/app/workdir
-  #     - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
+  worker:
+    image: ${WORKER_IMAGE:-flask_server:latest}
+    container_name: ${WORKER_CONTAINER_NAME:-flask_worker}
+    depends_on:
+      - flask_server
+      - redis
+      - tika
+      - rabbitmq
+    restart: always
+    command: celery -A flask_server.celery:celery worker --loglevel=info
+    environment:
+      TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://user:password@rabbitmq:5672//}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434/}
+      POPPLER_PATH: ${POPPLER_PATH:-}
+      MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
+      PORT: ${PORT:-8000}
+      TAVILY_KEY: ${TAVILY_KEY:-none}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
+    networks:
+      - tika_network
+    volumes:
+      - ${WORK_DIR:-./workdir}:/app/workdir
+      - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
 
   tika:
     image: ${TIKA_IMAGE:-apache/tika:latest-full}
