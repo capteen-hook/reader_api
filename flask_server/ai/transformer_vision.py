@@ -51,7 +51,7 @@ def get_model():
     if _model is None or _tf_processor is None or _device is None or _dtype is None:
         _model, _tf_processor, _device, _dtype = load_model()
         print(f"Model loaded: {_model}", file=sys.stderr)
-    return _model
+    return _model, _tf_processor, _device, _dtype
 
 def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
     # Convert PDF to list of images
