@@ -11,7 +11,7 @@ from flask_server.ai.prompts import fill_form, fill_home_form, fill_home_form_fo
 from flask_server.test_page import homePage
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
 from flask_server.ai.process import process_tika, process_plaintext, home_loop, process_file
-# from flask_server.ai.transformer_vision import process_vision
+from flask_server.ai.transformer_vision import process_vision
     
 
 # Set a task queue limit
@@ -28,10 +28,10 @@ def process_home_task(file_path, schema=default_home_form):
     content = home_loop(text, schema)
     return content
 
-# @celery.task
-# def process_vision_task(file_path, schema=default_appliance_form):
-#     content = process_vision(file_path, schema)
-#     return content
+@celery.task
+def process_vision_task(file_path, schema=default_appliance_form):
+    content = process_vision(file_path, schema)
+    return content
 
 def queue_full():
     """Check if the task queue is full."""

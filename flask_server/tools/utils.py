@@ -44,10 +44,12 @@ def validate_form(form_data):
             import json
             form_data = json.loads(form_data)
             
-        print("type of form_data:", type(form_data), file=sys.stderr)
         
         # Validate form data against the schema
         schema = JsonSchema(form_data)
+        
+        # print the type of the schema
+        # print the type of the schema's schema attribute
         
         # print("Validating form data against schema:", schema)
         # print("Schema content:", json.loads(schema.schema))

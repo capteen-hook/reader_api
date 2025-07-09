@@ -6,6 +6,7 @@ import ollama
 from outlines import from_ollama, Generator
 from flask_server.ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch, default_home_form, default_appliance_form
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
+from flask_server.tools.web_search import search_tavily
 
 load_dotenv()
 
@@ -59,7 +60,7 @@ def process_file(file_path, schema=example_schema):
         raise Exception(f"Error processing file {file_path}: {e}")
 
 def home_loop(text, schema):
-    schema = validate_form(schema)
+    schemaF = validate_form(schema)
     
     # home inspection reports can be quite long, so we need to split them into chunks
     chunksize = 10000
@@ -70,7 +71,7 @@ def home_loop(text, schema):
     for i, chunk in enumerate(chunks):
         print(f"Processing chunk {i+1}/{len(chunks)}")
         try:
-            result = process_plaintext(chunk, schema, fill_home_form_forward(chunk, schema, final_res))
+            result = process_plaintext(chunk, schema, fill_home_form_forward(chunk, schemaF, final_res))
         except Exception as e:
             print(f"Error processing chunk {i+1}: {e}")
             result = final_res.copy()  # Use the last valid result as a fallback
@@ -90,7 +91,7 @@ def home_loop(text, schema):
         search_results = search_tavily(address)
         
         try:
-            final_res = process_plaintext(search_results, schema, fill_home_form_websearch(search_results, schema, final_res))
+            final_res = process_plaintext(search_results, schema, fill_home_form_websearch(search_results, schemaF, final_res))
         except Exception as e:
             print(f"Error processing web search results: {e}")
         

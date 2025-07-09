@@ -19,7 +19,7 @@ from flask_server.test_page import homePage
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
 from flask_server.ai.process import process_tika, process_plaintext, home_loop, process_file
 from flask_server.celery import celery
-from flask_server.tasks import process_file_task, process_home_task, queue_full #, process_vision_task
+from flask_server.tasks import process_file_task, process_home_task, queue_full, process_vision_task
     
 load_dotenv()
 PORT = int(os.getenv("PORT", 8000))
@@ -99,8 +99,8 @@ def process_appliance_photo():
         file_path = upload_file(request.files.get('file'))
         schema = request.form.get('form', default_appliance_form)
         # WIP!
-        # process_appliance_task.apply_async(args=[file_path, default_appliance_form])
-        id = process_file_task.apply_async(args=[file_path, default_appliance_form])
+        id = process_appliance_task.apply_async(args=[file_path, schema])
+        #id = process_file_task.apply_async(args=[file_path, schema])
         return jsonify({"task_id": id.id}), 200
 
     except Exception as e:
