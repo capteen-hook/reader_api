@@ -19,4 +19,5 @@ def make_celery(app_name=__name__):
     broker_url = f"pyamqp://{user}:{password}@{host}:{port}//"
     return Celery(app_name, broker=broker_url, backend=f'redis://{redis_name}:{redis_port}/0', include=['flask_server.tasks'])
 
+
 celery = make_celery()
