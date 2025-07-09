@@ -30,8 +30,8 @@ dtype = torch.float32
 # it will have to download the model, which might take a while.
 model_kwargs={"device_map": "auto", "torch_dtype": dtype}
 processor_kwargs={"device_map": "gpu"}
-tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
-tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir=os.getenv("TRANSFORMERS_CACHE", "./cache"))
+tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
+tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache')
 
 model_i = from_transformers(tf_model, tf_processor)
 
@@ -66,7 +66,7 @@ def process_vision_multiple(file_path, schema):
 
     if file_path.lower().endswith('.pdf'):
         # conver to list of images
-        imagenames = convert_pdf_to_images(file_path, output_dir=os.getenv('WORK_DIR', './work_dir') + '/processing')
+        imagenames = convert_pdf_to_images(file_path, output_dir='/app/workdir/processing')
     else:
         # file is an image
         imagenames = [file_path]

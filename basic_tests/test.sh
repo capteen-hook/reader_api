@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# test.sh
+# test.sh : ./basic_tests/test.sh http://localhost:8000 
 # get crud functions from ./routes/crud.sh
 current_dir=$(dirname "$0")
 source "${current_dir}/routes/crud.sh"
@@ -13,7 +13,7 @@ fi
 auth_token=$2
 
 if [[ -z "${auth_token}" ]]; then
-    auth_token=""eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsImV4cCI6MjA2NzM3NDE1MX0.yRbfD5ze0ygFPEG8OdcQsL7sO05RfqiRs4GMz8YZScU" "
+    auth_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsImV4cCI6MjA2NzM4ODQ3OX0.HTzcIETW0sFSiHu31HLbZaJjlSvYo25OumnGdt_7xUM"
 fi
 
 echo "Running basic tests against ${url}"
@@ -54,7 +54,7 @@ get "${auth_token}" "${url}/tasks/${task_id1}"
 
 get "${auth_token}" "${url}/tasks/${task_id2}"
 
-get "${auth_token}" "${url}/tasks/${task_id3}"]
+get "${auth_token}" "${url}/tasks/${task_id3}"
 
 get "${auth_token}" "${url}/tasks"
 

@@ -2,6 +2,7 @@ import jwt
 import datetime
 import os
 from dotenv import load_dotenv
+load_dotenv()
 
 # Secret key for signing the token
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your_key_here") 

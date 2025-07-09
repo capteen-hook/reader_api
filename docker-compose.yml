@@ -15,17 +15,18 @@ services:
       - tika_network
     environment:
       TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
-      RABBITMQ_URL: ${RABBITMQ_URL:-http://rabbitmq:15672/api/}
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://user:password@rabbitmq:5672//}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434/}
       POPPLER_PATH: ${POPPLER_PATH:-}
-      TRANSFORMERS_CACHE: ${TRANSFORMERS_CACHE:-/tmp/transformers_cache}
-      WORK_DIR: ${WORK_DIR:-/tmp/workdir}
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
       PORT: ${PORT:-8000}
       TAVILY_KEY: ${TAVILY_KEY:-}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
+    volumes:
+      - ${WORK_DIR:-./workdir}:/app/workdir
+      - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
     healthcheck:  # other containers dont have curl so this does them all
       test: ["CMD-SHELL", "curl -f http://localhost:${PORT:-8000}/ || exit 1 && curl -f http://${TIKA_CONTAINER_NAME:-tika}:9998/tika || exit 1 && curl -f http://${RABBITMQ_CONTAINER_NAME:-rabbitmq}:15672/api/ || exit 1"]
       interval: 30s
@@ -44,19 +45,20 @@ services:
     command: celery -A flask_server.celery:celery worker --loglevel=info
     environment:
       TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
-      RABBITMQ_URL: ${RABBITMQ_URL:-http://rabbitmq:15672/api/}
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://user:password@rabbitmq:5672//}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434/}
       POPPLER_PATH: ${POPPLER_PATH:-}
-      TRANSFORMERS_CACHE: ${TRANSFORMERS_CACHE:-/tmp/transformers_cache}
-      WORK_DIR: ${WORK_DIR:-/tmp/workdir}
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
       PORT: ${PORT:-8000}
       TAVILY_KEY: ${TAVILY_KEY:-none}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
     networks:
       - tika_network
+    volumes:
+      - ${WORK_DIR:-./workdir}:/app/workdir
+      - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
 
   tika:
     image: ${TIKA_IMAGE:-apache/tika:latest-full}
@@ -82,6 +84,14 @@ services:
     networks:
       - tika_network
 
+  redis:
+    image: ${REDIS_IMAGE:-redis:latest}
+    container_name: ${REDIS_CONTAINER_NAME:-redis}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    restart: unless-stopped
+    networks:
+      - tika_network
 networks:
   tika_network:
     driver: bridge

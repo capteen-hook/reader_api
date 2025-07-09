@@ -1,0 +1,43 @@
+{  
+    "properties": {
+        "address": {                                                                                                    
+            "type": "string"
+        },
+        "bedrooms": {                                                                                                   
+            "type": "integer"
+        },                                                                                                              
+        "bathrooms": {                                                                                                  
+            "type": "integer"
+        },
+        "square_footage": {
+            "type": "integer"                                                                                           
+        },
+        "year_built": {                                                                                                 
+            "type": "integer"                                                                                           
+        },
+        "type": {                                                                                                       
+            "type": "string"
+        },                                                                                                              
+        "stories": {
+            "type": "integer"                                                                                           
+        },
+        "basement": {                                                                                                   
+            "type": "boolean"
+        },
+        "garage": {                                                                                                     
+            "type": "boolean"
+        },                                                                                                              
+        "pool": {
+            "type": "boolean"                                                                                           
+        },
+        "roof_type": {
+            "type": "string"                                                                                            
+        },
+        "location": {                                                                                                   
+            "type": "string"
+        }                                                                                                               
+    },
+    "required": ["address", "type"],                                                                                    
+    "title": "Home",
+    "type": "object"                                                                                                    
+}

@@ -75,7 +75,6 @@ get() {
     local response
 
     response=$(curl -s -i -X GET -H "Authorization: Bearer ${auth_token}" "${route}")
-
     if is_200 "${response}"; then
         echo -n "."
     else

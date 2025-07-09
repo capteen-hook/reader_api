@@ -19,7 +19,7 @@ def validate_file(filename):
 
         # Sanitize filename
         filename = secure_filename(filename)
-        file_path = os.path.join(os.getenv('WORK_DIR', './work_dir') + '/uploads', filename)
+        file_path = os.path.join('/app/workdir/uploads', filename)
 
         # Check if file exists
         if not os.path.exists(file_path):
@@ -39,6 +39,11 @@ def validate_form(form_data, default=example_schema):
     try:
         if not form_data:
             return default
+        
+        # if form_data is a string, parse it as JSON
+        if isinstance(form_data, str):
+            import json
+            form_data = json.loads(form_data)
         
         # Validate form data against the schema
         schema = JsonSchema(form_data)
@@ -67,7 +72,7 @@ def upload_file(file):
             raise ValueError("No file part in the request")
         
         filename = secure_filename(file.filename)
-        file_path = os.path.join(os.getenv('WORK_DIR', './work_dir') + '/uploads', filename)
+        file_path = os.path.join('/app/workdir/uploads', filename)
         file.save(file_path)
         
         return file_path

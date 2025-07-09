@@ -5,7 +5,7 @@ pipeline {
         DEPLOY_DIR='/var/jenkins_home/workspace/deploy'
         API_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsImV4cCI6MjA2NzI2MjQ3OX0.Z9PJ3KvXw6YoliABvwi5lxM8u2T7ovtuCAoIxTL4Kgo'
 
-        OLLAMA_URL='http://host.docker.internal:11434/v1'
+        OLLAMA_URL='http://host.docker.internal:11434'
         TIKA_URL='http://host.docker.internal:9999/tika'
         RABBITMQ_URL='pyamqp://user:password@host.docker.internal//'
         PORT='8001'
@@ -29,6 +29,9 @@ pipeline {
         RABBITMQ_PORT_2='15673'
         RABBITMQ_DEFAULT_USER='user'
         RABBITMQ_DEFAULT_PASS='password'
+        REDIS_CONTAINER_NAME='redis-default'
+        REDIS_IMAGE='redis:latest'
+        REDIS_PORT='6380'
     }
     stages {
         stage('Clone') {

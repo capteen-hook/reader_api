@@ -5,17 +5,26 @@ from dotenv import load_dotenv
 import ollama
 from outlines import from_ollama, Generator
 from flask_server.ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch
+from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
 
 load_dotenv()
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/v1")
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
 
-client = ollama.Client()
+# try to request the OLLAMA_URL 
+
+print(f"Using OLLAMA_URL: {OLLAMA_URL}")
+
+res = requests.get(OLLAMA_URL + "/v1/models")
+
+
+client = ollama.Client(host=OLLAMA_URL, timeout=120)
 model = from_ollama(client, os.getenv("MODEL_NAME", "gemma3:4b"))
 
 def process_file(file_path, schema=example_schema):
     try:
+        schema = validate_form(schema)
         
         if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp']:
             # For image files, we can use vision processing
@@ -31,17 +40,26 @@ def process_file(file_path, schema=example_schema):
         
         if not schema:
             raise ValueError("Invalid form schema provided")
-        content = fill_form(text, schema)
-        if not content:
-            raise ValueError("No content generated from the form")
+        
+        prompt = fill_form(text, schema)
     
-        return content
-    
+        generator = Generator(model, schema)
+        # Process the text with the prompt
+        result = generator(prompt)
+        try:
+            # Attempt to parse the result as JSON
+            return json.loads(result)
+        except json.JSONDecodeError as e:
+            # Log the error and the problematic result
+            print(f"Error decoding JSON: {e}")
+            print(f"Result string: {result}")
+            raise ValueError("Failed to parse JSON from the generator output.")
     except Exception as e:
         print(f"Error processing file {file_path}: {e}")
-        raise e
+        raise Exception(f"Error processing file {file_path}: {e}")
 
 def home_loop(text, schema):
+    schema = validate_form(schema, default=example_schema)
     
     # home inspection reports can be quite long, so we need to split them into chunks
     chunksize = 10000
@@ -64,17 +82,11 @@ def home_loop(text, schema):
             if key not in result:
                 result[key] = value
         
-        print("Result from chunk:", result)
         results.append(result)
         final_res = result
-        
-    print("Final result after processing all chunks:", final_res)
-    print("All results:", results)
-    
     # do a web search for the address if it exists
     address = final_res.get('address', '')
     if address and address != '':
-        print("Performing web search for address:", address)
         search_results = search_tavily(address)
         
         try:
@@ -82,7 +94,6 @@ def home_loop(text, schema):
         except Exception as e:
             print(f"Error processing web search results: {e}")
         
-        print("Final result after web search:", final_res)
         
     return final_res
 
@@ -93,7 +104,6 @@ def process_tika(file_path):
         content_type = 'image/' + file_path.split('.')[-1]
     elif file_path.endswith('.txt') or file_path.endswith('.md') or file_path.endswith('.csv') or file_path.endswith('.json') or file_path.endswith('.yaml'):
         # no need for tika
-        print("Processing text file directly without ocr")
         with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
     else:
@@ -119,6 +129,8 @@ def process_tika(file_path):
         return response.text
     
 def process_plaintext(text, schema, prompt=None):
+    schema = validate_form(schema, default=example_schema)
+    
     if prompt is None:
         prompt = fill_form(text, schema)
     generator = Generator(model, schema)
@@ -133,3 +145,10 @@ def process_plaintext(text, schema, prompt=None):
         print(f"Result string: {result}")
         raise ValueError("Failed to parse JSON from the generator output.")
     
+if __name__ == "__main__":
+    try:
+        content = process_file("../../basic_tests/pizza_recipe.txt")
+        print("Processed content:", content)
+    except Exception as e:
+        print(f"Error processing file: {e}")
+        raise e
