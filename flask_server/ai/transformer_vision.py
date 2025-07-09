@@ -34,7 +34,7 @@ def load_model():
     model_kwargs={"device_map": "auto", "torch_dtype": dtype}
     processor_kwargs={"device_map": "gpu"}
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
-    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache')
+    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
     print(f"Model {model_name} loaded successfully", file=sys.stderr)
     model_i = from_transformers(tf_model, tf_processor)
