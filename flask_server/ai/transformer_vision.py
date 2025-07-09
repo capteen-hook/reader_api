@@ -8,6 +8,7 @@ from outlines import Generator, from_transformers
 import os
 import gc
 from flask_server.ai.prompts import fill_form
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -137,6 +138,7 @@ def process_vision(file_path, schema):
             ],
         }
     ]
+    print(f"Processing image {file_path} with schema {schema}", file=sys.stderr)
     
     image_summary_generator = Generator(model_i, schema)
     

@@ -26,7 +26,7 @@ RUN pip install --no-cache-dir -r /app/flask_server/requirements.txt
 COPY . /app/flask_server
 
 # before launching the server, write out an api key to a file with generate_long_lasting_token in ./flask_server/generate.py
-RUN python -c "from flask_server.generate import generate_long_lasting_token; generate_long_lasting_token()"
+#RUN python -c "from flask_server.generate import generate_long_lasting_token; generate_long_lasting_token()"
 
 EXPOSE ${PORT:-8000}
 
