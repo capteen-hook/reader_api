@@ -123,7 +123,8 @@ def home_loop(text, schema):
 
 def process_tika(file_path):
     
-    TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
+    #TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
+    TIKA_URL = "http://localhost:9998/tika"
     
     
     if file_path.endswith('.pdf'):
