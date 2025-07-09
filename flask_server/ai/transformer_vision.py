@@ -108,7 +108,7 @@ def process_vision_multiple(file_path, schema):
         }
     ]
     
-    page_summary_generator = Generator(model_i, schema)
+    page_summary_generator = Generator(_model_i, schema)
     
     # Convert the messages to the final prompt
     prompt = _tf_processor.apply_chat_template(
@@ -158,7 +158,7 @@ def process_vision(file_path, schema):
     ]
     print(f"Processing image {file_path} with schema {schema}", file=sys.stderr)
     
-    image_summary_generator = Generator(model_i, schema)
+    image_summary_generator = Generator(_model_i, schema)
     
     prompt = _tf_processor.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
