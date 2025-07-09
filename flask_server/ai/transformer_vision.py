@@ -139,9 +139,8 @@ def process_vision_multiple(file_path, schema):
         try:
             image = Image.open(imagename)
             
-            image_tensor = transform(image).to(device=_device, dtype=_dtype)
-            result = page_summary_generator({"text": prompt, "images": image_tensor})
-            #result = page_summary_generator({"text": prompt, "images": [image]})
+            result = page_summary_generator({"text": prompt, "images": image})
+            
             results.append(result)
             
             # Free up memory
@@ -194,9 +193,7 @@ def process_vision(file_path, schema):
         
         print(f"Starting generation for image {file_path}", file=sys.stderr)
         
-        #result = image_summary_generator({"text": prompt, "images": [image]})
-        image_tensor = transform(image).to(device=_device, dtype=_dtype)
-        result = image_summary_generator({"text": prompt, "images": [image_tensor]})
+        result = image_summary_generator({"text": prompt, "images": image})
         
         print(f"Image processed successfully", file=sys.stderr)
         
