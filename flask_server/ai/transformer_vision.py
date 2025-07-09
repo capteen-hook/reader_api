@@ -13,6 +13,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def replace_containerized_path(file_path):
+    this = '/app/workdir/'
+    with_this = '/home/liam/reader_api/workdir/'
+    if file_path.startswith(this):
+        file_path = file_path.replace(this, with_this)
+    return file_path
+
 def load_model():
     if os.getenv("LIGHTWEIGHT_MODEL", "True").lower() in ["true", "1", "yes"]:
         # lighter model:
@@ -33,8 +40,8 @@ def load_model():
     # it will have to download the model, which might take a while.
     model_kwargs={"device_map": "auto", "torch_dtype": dtype}
     processor_kwargs={"device_map": "gpu"}
-    tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='./workdir/cache')
-    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='./workdir/cache', use_fast=True)
+    tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/home/liam/reader_api/workdir/cache')
+    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/home/liam/reader_api/workdir/cache', use_fast=True)
 
     print(f"Model {model_name} loaded successfully", file=sys.stderr)
     model_i = from_transformers(tf_model, tf_processor)
@@ -81,11 +88,13 @@ def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
     return imagenames
 
 def process_vision_multiple(file_path, schema):
+    file_path = replace_containerized_path(file_path)
+    
     _model_i, _tf_processor, _device, _dtype = get_model()
 
     if file_path.lower().endswith('.pdf'):
         # conver to list of images
-        imagenames = convert_pdf_to_images(file_path, output_dir='./workdir/processing')
+        imagenames = convert_pdf_to_images(file_path, output_dir='/home/liam/reader_api/workdir/processing')
     else:
         # file is an image
         imagenames = [file_path]
@@ -142,6 +151,10 @@ def process_vision_multiple(file_path, schema):
     return results
 
 def process_vision(file_path, schema):
+    file_path = replace_containerized_path(file_path)
+    # replace the containerized file path with the actual file path
+    
+    
     _model_i, _tf_processor, _device, _dtype = get_model()
     
     messages = [

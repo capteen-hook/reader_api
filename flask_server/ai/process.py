@@ -10,6 +10,13 @@ from flask_server.tools.web_search import search_tavily
 
 load_dotenv()
 
+def replace_containerized_path(file_path):
+    this = '/app/workdir/'
+    with_this = '/home/liam/reader_api/workdir/'
+    if file_path.startswith(this):
+        file_path = file_path.replace(this, with_this)
+    return file_path
+
 def get_model():
     OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
@@ -34,6 +41,8 @@ def get_model():
     return _model
 
 def process_file(file_path, schema=example_schema):
+    file_path = replace_containerized_path(file_path)
+    
     _model = get_model()
     
     try:
@@ -111,6 +120,7 @@ def home_loop(text, schema):
     return final_res
 
 def process_tika(file_path):
+    
     TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
     
     
