@@ -109,6 +109,9 @@ default_appliance_form = """{
         },
         "type": {
             "type": "string"
+        },
+        "additional_info": {
+            "type": "string"
         }
     }
 }"""
