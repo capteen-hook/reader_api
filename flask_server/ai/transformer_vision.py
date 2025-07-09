@@ -13,30 +13,45 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-if os.getenv("LIGHTWEIGHT_MODEL", "True").lower() in ["true", "1", "yes"]:
-    # lighter model:
-    from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
-    model_name = "Qwen/Qwen2-VL-7B-Instruct"
-    model_class = Qwen2VLForConditionalGeneration
-    processor_class = AutoProcessor
-else:
-    # heavyweight model:
-    from transformers import LlavaForConditionalGeneration, LlavaProcessor
-    model_name="mistral-community/pixtral-12b"
-    model_class=LlavaForConditionalGeneration
-    processor_class = LlavaProcessor
+def load_model():
+    if os.getenv("LIGHTWEIGHT_MODEL", "True").lower() in ["true", "1", "yes"]:
+        # lighter model:
+        from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+        model_name = "Qwen/Qwen2-VL-7B-Instruct"
+        model_class = Qwen2VLForConditionalGeneration
+        processor_class = AutoProcessor
+    else:
+        # heavyweight model:
+        from transformers import LlavaForConditionalGeneration, LlavaProcessor
+        model_name="mistral-community/pixtral-12b"
+        model_class=LlavaForConditionalGeneration
+        processor_class = LlavaProcessor
 
-print(f"Using model: {model_name}", file=sys.stderr)
-device = torch.device("cuda")
-dtype = torch.float32
-# it will have to download the model, which might take a while.
-model_kwargs={"device_map": "auto", "torch_dtype": dtype}
-processor_kwargs={"device_map": "gpu"}
-tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
-tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache')
+    print(f"Using model: {model_name}", file=sys.stderr)
+    device = torch.device("cuda")
+    dtype = torch.float32
+    # it will have to download the model, which might take a while.
+    model_kwargs={"device_map": "auto", "torch_dtype": dtype}
+    processor_kwargs={"device_map": "gpu"}
+    tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
+    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache')
 
-print(f"Model {model_name} loaded successfully", file=sys.stderr)
-model_i = from_transformers(tf_model, tf_processor)
+    print(f"Model {model_name} loaded successfully", file=sys.stderr)
+    model_i = from_transformers(tf_model, tf_processor)
+
+    return model_i, tf_processor, device, dtype
+
+_model = None
+_tf_processor = None
+_device = None
+_dtype = None
+
+def get_model():
+    global _model
+    if _model is None or _tf_processor is None or _device is None or _dtype is None:
+        _model, _tf_processor, _device, _dtype = load_model()
+        print(f"Model loaded: {_model}", file=sys.stderr)
+    return _model
 
 def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
     # Convert PDF to list of images
@@ -66,6 +81,7 @@ def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
     return imagenames
 
 def process_vision_multiple(file_path, schema):
+    _model_i, _tf_processor, _device, _dtype = get_model()
 
     if file_path.lower().endswith('.pdf'):
         # conver to list of images
@@ -95,13 +111,13 @@ def process_vision_multiple(file_path, schema):
     page_summary_generator = Generator(model_i, schema)
     
     # Convert the messages to the final prompt
-    prompt = tf_processor.apply_chat_template(
+    prompt = _tf_processor.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
     
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.ConvertImageDtype(dtype),
+        transforms.ConvertImageDtype(_dtype),
     ])
     
     results = []
@@ -109,7 +125,7 @@ def process_vision_multiple(file_path, schema):
         try:
             image = Image.open(imagename)
             
-            # image_tensor = transform(image).to(device=device, dtype=dtype)
+            # image_tensor = transform(image).to(device=_device, dtype=_dtype)
             # result = page_summary_generator({"text": prompt, "images": image_tensor})
             result = page_summary_generator({"text": prompt, "images": [image]})
             results.append(result)
@@ -126,6 +142,8 @@ def process_vision_multiple(file_path, schema):
     return results
 
 def process_vision(file_path, schema):
+    _model_i, _tf_processor, _device, _dtype = get_model()
+    
     messages = [
         {
             "role": "user",
@@ -142,13 +160,13 @@ def process_vision(file_path, schema):
     
     image_summary_generator = Generator(model_i, schema)
     
-    prompt = tf_processor.apply_chat_template(
+    prompt = _tf_processor.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
     
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.ConvertImageDtype(dtype),
+        transforms.ConvertImageDtype(_dtype),
     ])
     
     try:
