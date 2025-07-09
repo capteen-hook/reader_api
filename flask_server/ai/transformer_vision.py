@@ -196,7 +196,7 @@ def process_vision(file_path, schema):
         
         #result = image_summary_generator({"text": prompt, "images": [image]})
         image_tensor = transform(image).to(device=_device, dtype=_dtype)
-        result = page_summary_generator({"text": prompt, "images": image_tensor})
+        result = image_summary_generator({"text": prompt, "images": image_tensor})
         
         print(f"Image processed successfully", file=sys.stderr)
         
