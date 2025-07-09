@@ -177,7 +177,7 @@ def process_vision(file_path, schema):
         del image
         torch.cuda.empty_cache()
         gc.collect()
-        
+        print(f"Processed image {file_path}: {result}", file=sys.stderr)
         return result
     except Exception as e:
         print(f"Error processing image {file_path}: {e}")
