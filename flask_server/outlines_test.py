@@ -91,17 +91,17 @@ default_home_form = """{
     "type": "object"
 }"""
 
+if __name__ == "__main__":
+    schema = JsonSchema(default_appliance_form)
 
-schema = JsonSchema(default_appliance_form)
 
+    client = ollama.Client()
+    model = from_ollama(client,"gemma3:4b")
 
-client = ollama.Client()
-model = from_ollama(client,"gemma3:4b")
+    text = open(file, 'r', encoding='utf-8').read()
 
-text = open(file, 'r', encoding='utf-8').read()
+    prompt = "Fill out the following form based on the text: " + text
 
-prompt = "Fill out the following form based on the text: " + text
-
-generator = Generator(model, schema)
-result = generator(prompt)
-print("Result:", result)
+    generator = Generator(model, schema)
+    result = generator(prompt)
+    print("Result:", result)

@@ -169,10 +169,16 @@ def process_vision(file_path, schema):
         transforms.ConvertImageDtype(_dtype),
     ])
     
+    print(f"Transform composed", file=sys.stderr)
+    
     try:
         image = Image.open(file_path)
         
+        print(f"Starting generation for image {file_path}", file=sys.stderr)
+        
         result = image_summary_generator({"text": prompt, "images": [image]})
+        
+        print(f"Image processed successfully", file=sys.stderr)
         
         del image
         torch.cuda.empty_cache()

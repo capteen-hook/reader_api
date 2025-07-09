@@ -6,10 +6,14 @@ load_dotenv()
 def make_celery(app_name=__name__):
     user = os.getenv('RABBITMQ_DEFAULT_USER', 'user')
     password = os.getenv('RABBITMQ_DEFAULT_PASS', 'password')
-    host = os.getenv('RABBITMQ_CONTAINER_NAME', 'rabbitmq')
+    
+    host = 'localhost'
+    # host = os.getenv('RABBITMQ_CONTAINER_NAME', 'rabbitmq')
+    
     port = os.getenv('RABBITMQ_PORT', '5672')
     
-    redis_name = os.getenv('REDIS_CONTAINER_NAME', 'redis')
+    redis_name = 'localhost'
+    # redis_name = os.getenv('REDIS_CONTAINER_NAME', 'redis')
     redis_port = os.getenv('REDIS_PORT', '6379')
 
     broker_url = f"pyamqp://{user}:{password}@{host}:{port}//"

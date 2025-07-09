@@ -8,8 +8,6 @@ import sys
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key") 
-
 def validate_file(filename):
     try:
         # Validate filename
@@ -61,6 +59,7 @@ def validate_form(form_data):
         
 def verify_jwt(token):
     try:
+        SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key") 
         # Decode the JWT token
         decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         return decoded

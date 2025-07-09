@@ -10,20 +10,32 @@ from flask_server.tools.web_search import search_tavily
 
 load_dotenv()
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
-TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
+def get_model():
+    OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
-# try to request the OLLAMA_URL 
+    # try to request the OLLAMA_URL 
 
-print(f"Using OLLAMA_URL: {OLLAMA_URL}")
+    print(f"Using OLLAMA_URL: {OLLAMA_URL}")
 
-res = requests.get(OLLAMA_URL + "/v1/models")
+    res = requests.get(OLLAMA_URL + "/v1/models")
 
 
-client = ollama.Client(host=OLLAMA_URL, timeout=120)
-model = from_ollama(client, os.getenv("MODEL_NAME", "gemma3:4b"))
+    client = ollama.Client(host=OLLAMA_URL, timeout=120)
+    model = from_ollama(client, os.getenv("MODEL_NAME", "gemma3:4b"))
+    return model
+    
+_model = None
+
+def get_model():
+    global _model
+    if _model is None:
+        _model = get_model()
+        print(f"Model loaded: {_model}", file=sys.stderr)
+    return _model
 
 def process_file(file_path, schema=example_schema):
+    _model = get_model()
+    
     try:
         schema = validate_form(schema)
         
@@ -44,7 +56,7 @@ def process_file(file_path, schema=example_schema):
         
         prompt = fill_form(text, schema)
     
-        generator = Generator(model, schema)
+        generator = Generator(_model, schema)
         # Process the text with the prompt
         result = generator(prompt)
         try:
@@ -99,6 +111,9 @@ def home_loop(text, schema):
     return final_res
 
 def process_tika(file_path):
+    TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
+    
+    
     if file_path.endswith('.pdf'):
         content_type = 'application/pdf'
     elif file_path.endswith('.png') or file_path.endswith('.jpg') or file_path.endswith('.jpeg'):
@@ -130,11 +145,13 @@ def process_tika(file_path):
         return response.text
     
 def process_plaintext(text, schema, prompt=None):
+    _model = get_model()
+    
     schema = validate_form(schema)
     
     if prompt is None:
         prompt = fill_form(text, schema)
-    generator = Generator(model, schema)
+    generator = Generator(_model, schema)
     # Process the text with the prompt
     result = generator(prompt)    
     try:
