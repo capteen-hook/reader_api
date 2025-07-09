@@ -1,11 +1,9 @@
 from celery import Celery
 import os
 from dotenv import load_dotenv
+load_dotenv()
 
 def make_celery(app_name=__name__):
-    
-    # use the alternate dotenv 
-    load_dotenv('./local.env')
     user = os.getenv('RABBITMQ_DEFAULT_USER', 'user')
     password = os.getenv('RABBITMQ_DEFAULT_PASS', 'password')
     
