@@ -34,11 +34,11 @@ def process_vision_task(file_path, schema=default_appliance_form):
     return content
 
 def queue_full():
-    """Check if the task queue is full."""
     try:
         active_tasks = celery.control.inspect().active() or {}
         reserved_tasks = celery.control.inspect().reserved() or {}
         total_tasks = sum(len(tasks) for tasks in active_tasks.values()) + sum(len(tasks) for tasks in reserved_tasks.values())
+        print(f"Total tasks in queue: {total_tasks}", file=sys.stderr)
         return total_tasks >= MAX_TASKS
     except Exception as e:
         print(f"Error checking task queue: {e}", file=sys.stderr)
