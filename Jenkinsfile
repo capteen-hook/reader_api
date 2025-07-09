@@ -102,7 +102,7 @@ pipeline {
             steps {
                 script {
                     // remove the containers if they were put up
-                    sh 'docker compose down || true' // Use '|| true' to avoid failure if no containers are running
+                    sh 'docker compose down --remove-orphans -v || true' // Use '|| true' to avoid failure if no containers are running
                     // Switch to the deploy directory
                     dir(DEPLOY_DIR) {
                         // switch out all the test environment variables for the production ones from .env
@@ -121,7 +121,7 @@ pipeline {
     }
     post {
         always {
-            sh 'docker compose down'
+            sh 'docker compose down --remove-orphans -v || true'
         }
     }
 }

@@ -19,7 +19,7 @@ from flask_server.test_page import homePage
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
 from flask_server.ai.process import process_tika, process_plaintext, home_loop, process_file
 from flask_server.celery import celery
-from flask_server.tasks import process_file_task, process_home_task, queue_full
+from flask_server.tasks import process_file_task, process_home_task, queue_full #, process_vision_task
     
 load_dotenv()
 PORT = int(os.getenv("PORT", 8000))
@@ -58,7 +58,8 @@ def process_file_default():
         if queue_full():
             print("Task queue is full, cannot enqueue file processing task")
             return jsonify({"error": "Task queue is full"}), 503
-        
+        print(f"Incoming request: {request.files}, {request.form}, {request.headers}", file=sys.stderr)
+
         file_path = upload_file(request.files.get('file'))
         schema = request.form.get('form', example_schema)
         
@@ -75,7 +76,8 @@ def process_home_report():
         if queue_full():
             print("Task queue is full, cannot enqueue file processing task")
             return jsonify({"error": "Task queue is full"}), 503
-        
+        print(f"Incoming request: {request.files}, {request.form}, {request.headers}", file=sys.stderr)
+
         file_path = upload_file(request.files.get('file'))
         schema = request.form.get('form', default_home_form)
         
@@ -91,6 +93,8 @@ def process_appliance_photo():
     try:
         if queue_full():
             return jsonify({"error": "Task queue is full"}), 503
+        print(f"Incoming request: {request.files}, {request.form}, {request.headers}", file=sys.stderr)
+
         
         file_path = upload_file(request.files.get('file'))
         schema = request.form.get('form', default_appliance_form)
@@ -107,19 +111,22 @@ def process_appliance_photo():
 def tika_process():                                       # consider changing this to a task
     # get the OCR result from Tika
     try:
+        print("Processing file with Tika...", file=sys.stderr)
+        print(f"Incoming request: {request.files}, {request.form}, {request.headers}", file=sys.stderr)
+
         file_path = upload_file(request.files.get('file'))
         text = process_tika(file_path)
-        
+        print("Tika processing complete", file=sys.stderr)
         return jsonify(text), 200
     
     except ValueError as ve:
-        print(f"Value error: {ve}")
+        print(f"Value error: {ve}", file=sys.stderr)
         return jsonify({"error": str(ve)}), 400
     except FileNotFoundError as fnfe:
-        print(f"File not found: {fnfe}")
+        print(f"File not found: {fnfe}", file=sys.stderr)
         return jsonify({"error": str(fnfe)}), 404
     except Exception as e:
-        print(f"Error processing with Tika: {e}")
+        print(f"Error processing with Tika: {e}", file=sys.stderr)
         return jsonify({"error": str(e)}), 500
     
 @app.route('/tasks', methods=['GET'])

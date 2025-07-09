@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask_server.ai.prompts import example_schema
 from outlines.types import JsonSchema
 from werkzeug.utils import secure_filename
+import sys
 
 load_dotenv()
 
@@ -35,15 +36,15 @@ def validate_file(filename):
         print(f"Error validating file: {e}")
         raise Exception("Error validating file")
     
-def validate_form(form_data, default=example_schema):
+def validate_form(form_data):
     try:
-        if not form_data:
-            return default
         
         # if form_data is a string, parse it as JSON
         if isinstance(form_data, str):
             import json
             form_data = json.loads(form_data)
+            
+        print("type of form_data:", type(form_data), file=sys.stderr)
         
         # Validate form data against the schema
         schema = JsonSchema(form_data)
@@ -78,5 +79,5 @@ def upload_file(file):
         return file_path
     
     except Exception as e:
-        print(f"Error uploading file: {e}")
+        print(f"Error uploading file: {e}", file=sys.stderr)
         raise Exception("Error uploading file")

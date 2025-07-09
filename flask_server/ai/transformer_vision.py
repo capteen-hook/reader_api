@@ -7,7 +7,7 @@ from pdf2image import convert_from_path
 from outlines import Generator, from_transformers
 import os
 import gc
-from flask_server.prompts import fill_form
+from flask_server.ai.prompts import fill_form
 from dotenv import load_dotenv
 
 load_dotenv()

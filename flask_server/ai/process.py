@@ -4,7 +4,7 @@ import json
 from dotenv import load_dotenv
 import ollama
 from outlines import from_ollama, Generator
-from flask_server.ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch
+from flask_server.ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch, default_home_form, default_appliance_form
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
 
 load_dotenv()
@@ -59,7 +59,7 @@ def process_file(file_path, schema=example_schema):
         raise Exception(f"Error processing file {file_path}: {e}")
 
 def home_loop(text, schema):
-    schema = validate_form(schema, default=example_schema)
+    schema = validate_form(schema)
     
     # home inspection reports can be quite long, so we need to split them into chunks
     chunksize = 10000
@@ -129,7 +129,7 @@ def process_tika(file_path):
         return response.text
     
 def process_plaintext(text, schema, prompt=None):
-    schema = validate_form(schema, default=example_schema)
+    schema = validate_form(schema)
     
     if prompt is None:
         prompt = fill_form(text, schema)

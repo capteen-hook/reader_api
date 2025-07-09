@@ -40,25 +40,12 @@ tab_button = """
 process_form = """
 <div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
     <h2>{tab_name}</h2>
-    <form class="process-form" action="{action_url}" method="post">
-    <input type="text" name="filename" placeholder="Enter uploaded filename" required>
-    <input type="text" name="auth" placeholder="Enter authentication token" required>
-    <textarea name="form" rows="10" cols="50" placeholder="Enter form data in JSON format" style="white-space: pre-wrap;">{form_data}</textarea>
-    <br>
-    <input type="submit" value="Process File">
-    </form>
-</div>
-"""
-
-# this doesnt need a form field- just a filename
-tika_process = """
-<div id="tab7" style="display:none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
-    <h2>Tika OCR</h2>
-    <form class="process-form" action="/process/tika" method="post">
-    <input type="text" name="filename" placeholder="Enter uploaded filename" required>
-    <input type="text" name="auth" placeholder="Enter authentication token" required>
-    <br>
-    <input type="submit" value="Process File with Tika OCR">
+    <form class="upload-form" action="{action_url}" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" required>
+        <input type="text" name="auth" placeholder="Enter authentication token" required>
+        <textarea name="form" rows="10" cols="50" placeholder="Enter form data in JSON format" style="white-space: pre-wrap;">{form_data}</textarea>
+        <br>
+        <input type="submit" value="Process File">
     </form>
 </div>
 """
@@ -68,8 +55,8 @@ clear_uploads = """
 <div id="tab8" style="display:none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
     <h2>Clear Uploads</h2>
     <form action="/clear" method="get" id="clearUploadsForm">
-    <input type="text" name="auth" placeholder="Enter authentication token" required>
-    <input type="submit" value="Clear Uploads">
+        <input type="text" name="auth" placeholder="Enter authentication token" required>
+        <input type="submit" value="Clear Uploads">
     </form>
 </div>
 """
@@ -81,51 +68,6 @@ function showTab(tabId) {
     });
     document.getElementById(tabId).style.display = 'block';
 }
-"""
-
-script_form = """
-document.querySelectorAll('.process-form').forEach(form => {
-    form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-        console.log('Form submitted:', this); // Log the form for debugging
-        const formData = new FormData(this);
-        const jsonData = {};
-
-        formData.forEach((value, key) => {
-            if (key === 'form') {
-                try {
-                    jsonData[key] = JSON.parse(value); // Parse JSON from the form field
-                } catch (e) {
-                    alert('Invalid JSON format in form data');
-                    return;
-                }
-            } else {
-                jsonData[key] = value; // Add other fields like filename
-            }
-        });
-        console.log('Sending JSON data:', jsonData); // Log the JSON data for debugging
-        fetch(this.action, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json', // Explicitly set content type
-                'Authorization': 'Bearer ' + jsonData.auth // Include auth token in headers                
-            },
-            body: JSON.stringify(jsonData) // Send JSON object as request body
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert(JSON.stringify(data, null, 2)); // Display response data
-        })
-        .catch(error => {
-            alert('Error: ' + error.message);
-        });
-    });
-});
 """
 
 script_button_auth = """
@@ -164,8 +106,9 @@ document.querySelectorAll('.button-form-auth').forEach(form => {
 script_button_noauth = """
 document.querySelectorAll('.button-form-noauth').forEach(form => {
     form.addEventListener('submit', function(event) {
-        console.log('Form submitted:', this); // Log the form for debugging
-        event.preventDefault(); // Prevent default form submission
+        
+        event.preventDefault(); 
+        
         fetch(this.action, {
             method: this.method
         })
@@ -188,18 +131,19 @@ document.querySelectorAll('.button-form-noauth').forEach(form => {
 script_file_upload = """
 document.querySelectorAll('.upload-form').forEach(form => {
     form.addEventListener('submit', function(event) {
-        console.log('Form submitted:', this); // Log the form for debugging
         event.preventDefault(); // Prevent default form submission
+        
         const formData = new FormData(this);
         const authToken = formData.get('auth');
         if (!authToken) {
             alert('Authorization token is missing!');
             return;
         }
+        formData.delete('auth');
+
         fetch(this.action, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + authToken // Include auth token in headers         
             },
             body: formData // Send FormData object as request body
@@ -211,7 +155,13 @@ document.querySelectorAll('.upload-form').forEach(form => {
             return response.json();
         })
         .then(data => {
-            alert(JSON.stringify(data, null, 2)); // Display response data
+            // if there is a task_id in the response -> open in a new tab
+            if (data.task_id) {
+                const taskUrl = `/tasks/${data.task_id}`;
+                const newTab = window.open(taskUrl, '_blank');
+            } else {
+                alert(JSON.stringify(data, null, 2)); // Display response data
+            }
         })
         .catch(error => {
             alert('Error: ' + error.message);
@@ -219,46 +169,71 @@ document.querySelectorAll('.upload-form').forEach(form => {
     });
 });
 """
-        
-# script_clear_uploads = """
-# document.getElementById('clearUploadsForm').addEventListener('submit', function(event) {
-#     event.preventDefault(); // Prevent the default form submission
-#     const formData = new FormData(this);
-#     // Retrieve the auth token from the form data
-#     const authToken = formData.get('auth');
-#     if (!authToken) {
-#         alert('Authorization token is missing!');
-#         return;
-#     }
-#     fetch(this.action, {
-#         method: 'GET',
-#         headers: {
-#             'Authorization': 'Bearer ' + authToken // Include auth token in headers
-#         }
-#     })
-#     .then(response => {
-#         if (!response.ok) {
-#             throw new Error(`HTTP error! status: ${response.status}`);
-#         }
-#         return response.json();
-#     })
-#     .then(data => {
-#         alert(JSON.stringify(data, null, 2));
-#     })
-#     .catch(error => {
-#         alert('Error: ' + error.message);
-#     });
-# });
-# """
 
+script_task_form = """
+document.querySelectorAll('.task-form').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+        
+        // if the task_id is empty, get /tasks
+        // if the task_id is not empty, get /tasks/<task_id>
+        
+        const formData = new FormData(this);
+        const authToken = formData.get('auth');
+        if (!authToken) {
+            alert('Authorization token is missing!');
+            return;
+        }
+        
+        const taskId = formData.get('task_id');
+
+        if (!taskId || taskId.trim() === '') {
+            fetch(this.action, {
+                method: this.method,
+                headers: {
+                    'Authorization': 'Bearer ' + authToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                } else {
+                    return response.json();
+                }
+            })
+            .then(data => {
+                alert(JSON.stringify(data, null, 2)); // Display response data
+            })
+        } else {
+            fetch(`${this.action}/${taskId}`, {
+                method: this.method,
+                headers: {
+                    'Authorization': 'Bearer ' + authToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                } else {
+                    return response.json();
+                }
+            })
+            .then(data => {
+                alert(JSON.stringify(data, null, 2)); // Display response data
+            })
+        }
+    });
+});
+"""
+                    
 file_upload_form = """
 <div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
     <h2>{tab_name}</h2>
     <form class="upload-form" action="{action_url}" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" required>
-    <input type="text" name="auth" placeholder="Enter authentication token" required>
-    <br>
-    <input type="submit" value="Upload File">
+        <input type="file" name="file" required>
+        <input type="text" name="auth" placeholder="Enter authentication token" required>
+        <br>
+        <input type="submit" value="Upload File">
     </form>
 </div>
 """
@@ -267,9 +242,9 @@ button_form_auth = """
 <div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
     <h2>{tab_name}</h2>
     <form action="{action_url}" method="{method}" class="button-form-auth">
-    <input type="text" name="auth" placeholder="Enter authentication token" required>
-    <br>
-    <input type="submit" value="{tab_name}">
+        <input type="text" name="auth" placeholder="Enter authentication token" required>
+        <br>
+        <input type="submit" value="{tab_name}">
     </form>
 </div>
 """
@@ -278,7 +253,26 @@ button_form_noauth = """
 <div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
     <h2>{tab_name}</h2>
     <form action="{action_url}" method="{method}" class="button-form-noauth">
-    <input type="submit" value="{tab_name}">
+        <input type="submit" value="{tab_name}">
+    </form>
+</div>
+"""
+
+link_button = """
+<div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
+    <h2>{tab_name}</h2>
+    <a href="{action_url}" target="_blank" class="button-link">{tab_name}</a>
+</div>
+"""
+
+task_form = """
+<div id="{tab_id}" style="display: none; z-index: 1; top: 50px; margin-left: auto; margin-right: auto; width: 80%; background-color: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">
+    <h2>{tab_name}</h2>
+    <form action="{action_url}" method="{method}" class="task-form">
+        <input type="text" name="auth" placeholder="Enter authentication token" required>
+        <input type="text" name="task_id" placeholder="Enter task ID">
+        <br>
+        <input type="submit" value="Get Task Status">
     </form>
 </div>
 """
@@ -290,6 +284,15 @@ def file_upload_tab(tab_info):
         tab_name=tab_info["tab_name"],
         action_url=tab_info["action_url"]
     )
+    
+def task_tab(tab_info, auth=True, method='get'):
+    return task_form.format(
+        tab_id=tab_info["tab_id"],
+        tab_name=tab_info["tab_name"],
+        action_url=tab_info["action_url"],
+        method=method
+        )
+    
 
 def button_tab(tab_info, auth=True, method='post'):
     if auth:
@@ -308,7 +311,14 @@ def button_tab(tab_info, auth=True, method='post'):
         )
     else:
         return '<div>man i dont even know</div>'
-
+    
+def forward_button(tab_info):
+    return link_button.format(
+        tab_id=tab_info["tab_id"],
+        tab_name=tab_info["tab_name"],
+        action_url=tab_info["action_url"]
+    )
+    
 def ollama_active_element(ollama_active):
     if ollama_active:
         return '<div style="color: green; font-weight: bold;">Ollama is active</div>'
@@ -397,9 +407,9 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
     process_endpoints = [process_form.format(**endpoint) for endpoint in proccess_endpoints]
     
     tabs_b_source = [
-        button_tab(tabs_b_source[0], auth=False, method='get'),  # Docs tab does not need auth
+        forward_button(tabs_b_source[0]),  # Docs tab is a forward button
         file_upload_tab(tabs_b_source[1]),
-        button_tab(tabs_b_source[2], auth=True, method='get'),  # Tasks tab requires auth
+        task_tab(tabs_b_source[2], auth=True, method='get'),  # Tasks tab requires auth
         button_tab(tabs_b_source[3], auth=True, method='post')  # Clear tab requires auth
     ]
     
@@ -409,7 +419,7 @@ def homePage(default_home_form, default_appliance_form, default_form_data):
 
         
     body_content = tab_container.format(tab_buttons=tab_buttons, tabs=tabs_all)
-    javascript_code = script_show_tab + script_form + script_file_upload + script_button_auth + script_button_noauth
+    javascript_code = script_show_tab + script_file_upload + script_button_auth + script_button_noauth + script_task_form
     css_code = ""
     
     return boilerplate.format(
