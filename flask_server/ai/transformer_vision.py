@@ -25,6 +25,7 @@ else:
     model_class = Qwen2VLForConditionalGeneration
     processor_class = AutoProcessor
 
+print(f"Using model: {model_name}", file=sys.stderr)
 device = torch.device("cuda")
 dtype = torch.float32
 # it will have to download the model, which might take a while.
@@ -33,6 +34,7 @@ processor_kwargs={"device_map": "gpu"}
 tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
 tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache')
 
+print(f"Model {model_name} loaded successfully", file=sys.stderr)
 model_i = from_transformers(tf_model, tf_processor)
 
 def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
