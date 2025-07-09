@@ -18,7 +18,8 @@ def replace_containerized_path(file_path):
     return file_path
 
 def create_ollama_client():
-    OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+    #OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+    OLLAMA_URL = "http://localhost:11434" 
 
     # try to request the OLLAMA_URL 
 
