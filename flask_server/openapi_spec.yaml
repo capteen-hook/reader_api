@@ -8,12 +8,12 @@ servers:
 tags:
   - name: file
     description: Operations related to file uploads
-  - name: processing
-    description: Operations related to processing uploaded files
-  - name: Home
-    description: Operations related to processing home inspection reports
-  - name: Appliance
-    description: Operations related to processing appliance manufacturer plates
+  - name: home
+    description: Operations related to processing home inspection reports, using searh services
+  - name: appliance
+    description: Operations related to processing appliance manufacturer plates, involving vision
+  - name: task
+    description: Operations related to task management, including creating jobs
 components:
   securitySchemes:
     BearerAuth:
@@ -173,7 +173,7 @@ paths:
   /process/file:
     post:
       tags:
-        - processing
+        - task
         - file
       summary: Upload and process a file
       description: Upload a file and process it immediately.
@@ -208,6 +208,7 @@ paths:
   /process/home:
     post:
       tags:
+        - task
         - home
         - file
       summary: Upload and process a home inspection report
@@ -243,6 +244,7 @@ paths:
   /process/appliance:
     post:
       tags:
+        - task
         - appliance
         - file
       summary: Upload and process a photo of an appliance manufacturer plate
@@ -278,7 +280,6 @@ paths:
   /process/ocr:
     post:
       tags:
-        - processing
         - file
       summary: Upload and process a file for OCR
       description: Upload a file and process it immediately for OCR. Returns the raw text content, unformatted.
@@ -308,10 +309,72 @@ paths:
           description: Service unavailable, the server is currently busy processing other tasks
         '401':
           description: Unauthorized, invalid or missing authentication token
+  /process/text:
+    post:
+      summary: Send a message and a schema to the server for processing
+      description: Send a message and a JSON schema to the server for processing. The server will return the structured response based on the provided schema.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: The text message to be processed
+                form:
+                  $ref: '#/components/schemas/Form'
+      responses:
+        '200':
+          description: Successful processing of the message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
+  /chat:
+    post:
+      summary: Send a message to the server for processing
+      description: Send a message to the server for processing. The server will return the structured response based on the provided schema.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: The text message to be processed
+      responses:
+        '200':
+          description: Successful processing of the message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task:
+                    $ref: '#/components/schemas/Task'
+        '503':
+          description: Service unavailable, the server is currently busy processing other tasks
+        '401':
+          description: Unauthorized, invalid or missing authentication token
   /tasks:
     get:
       tags:
-        - processing
+        - task
       summary: Retrieve current task status and queue length
       description: Get the current status of tasks in the queue, including their IDs, statuses, and results if available.
       security:
@@ -333,7 +396,7 @@ paths:
   /tasks/{task_id}:
     get:
       tags:
-        - processing
+        - task
       summary: Retrieve a specific task status
       description: Get the status of a specific task by its ID, including its current status and result if available.
       security:
@@ -359,6 +422,7 @@ paths:
   /clear:
     post:
       tags:
+        - task
         - file
       summary: Manually clear the uploaded files and tasks, and cancel the current task.
       description: Clear all uploaded files and tasks from the server. This is useful for testing and development purposes.

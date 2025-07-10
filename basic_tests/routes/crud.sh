@@ -26,6 +26,23 @@ post() { # no body
     fi
 }
 
+post_json() { # json body
+    local auth_token=$1
+    local route=$2
+    local body=$3
+    local response
+
+    response=$(curl -s -i -X POST -H "Authorization: Bearer ${auth_token}" -H "Content-Type: application/json" -d "${body}" "${route}")
+
+    if is_200 "${response}"; then
+        echo -n "."
+    else
+        echo ""
+        echo "POST ${route} with body ${body} failed: ${response}"
+        exit 1
+    fi
+}
+
 post_multipart() { # file and json schema
     local auth_token=$1
     local route=$2

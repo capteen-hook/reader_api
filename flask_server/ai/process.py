@@ -19,8 +19,8 @@ def replace_containerized_path(file_path):
     return file_path
 
 def create_ollama_client():
-    #OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
-    OLLAMA_URL = "http://localhost:11434" 
+    OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+    #OLLAMA_URL = "http://localhost:11434" 
 
     # try to request the OLLAMA_URL 
 
@@ -31,21 +31,23 @@ def create_ollama_client():
 
     client = ollama.Client(host=OLLAMA_URL, timeout=120)
     model = from_ollama(client, os.getenv("MODEL_NAME", "gemma3:4b"))
-    return model
+    return model, client
     
 _model = None
+_client = None
 
 def get_model():
     global _model
-    if _model is None:
-        _model = create_ollama_client()
+    global _client
+    if _model is None or _client is None:
+        _model, _client = create_ollama_client()
         print(f"Model loaded: {_model}", file=sys.stderr)
-    return _model
+    return _model, _client
 
 def process_file(file_path, schema=example_schema):
-    file_path = replace_containerized_path(file_path)
+    #file_path = replace_containerized_path(file_path)
     
-    _model = get_model()
+    _model, _client = get_model()
     
     try:
         schema = validate_form(schema)
@@ -123,8 +125,8 @@ def home_loop(text, schema):
 
 def process_tika(file_path):
     
-    #TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
-    TIKA_URL = "http://localhost:9998/tika"
+    TIKA_URL = os.getenv("TIKA_URL", "http://localhost:9998/tika")
+    #TIKA_URL = "http://localhost:9998/tika"
     
     
     if file_path.endswith('.pdf'):
@@ -158,7 +160,7 @@ def process_tika(file_path):
         return response.text
     
 def process_plaintext(text, schema, prompt=None):
-    _model = get_model()
+    _model, _client = get_model()
     
     schema = validate_form(schema)
     
@@ -175,6 +177,20 @@ def process_plaintext(text, schema, prompt=None):
         print(f"Error decoding JSON: {e}")
         print(f"Result string: {result}")
         raise ValueError("Failed to parse JSON from the generator output.")
+    
+def chat(text):
+    _model, _client = get_model()
+    
+    try:
+        response = _client.chat(
+            model=os.getenv("MODEL_NAME", "gemma3:4b"),
+            messages=[{"role": "user", "content": text}]
+        )
+        
+        return response['message']['content']
+    except Exception as e:
+        print(f"Error during chat processing: {e}")
+        raise Exception(f"Error during chat processing: {e}")        
     
 if __name__ == "__main__":
     try:

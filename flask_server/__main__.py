@@ -17,7 +17,7 @@ from flask_server.tools.web_search import search_tavily
 from flask_server.ai.prompts import fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema
 from flask_server.test_page import homePage
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
-from flask_server.ai.process import process_tika, process_plaintext, home_loop, process_file
+from flask_server.ai.process import process_tika, process_plaintext, home_loop, process_file, chat
 from flask_server.celery import celery
 from flask_server.tasks import process_file_task, process_home_task, queue_full#, process_vision_task
     
@@ -119,6 +119,35 @@ def create_app(app):
             return jsonify({"error": str(fnfe)}), 404
         except Exception as e:
             print(f"Error processing with Tika: {e}", file=sys.stderr)
+            return jsonify({"error": str(e)}), 500
+        
+    @app.route('/process/text', methods=['POST'])
+    def plaintext_process():
+        try:
+            print("Processing plaintext file...", file=sys.stderr)
+
+           
+            text = process_plaintext(request.json.get('message', ''), request.json.get('form', example_schema))
+            return jsonify(text), 200
+        except ValueError as ve:
+            print(f"Value error: {ve}", file=sys.stderr)
+            return jsonify({"error": str(ve)}), 400
+        except Exception as e:
+            print(f"Error processing plaintext file: {e}", file=sys.stderr)
+            return jsonify({"error": str(e)}), 500
+        
+    @app.route('/chat', methods=['POST'])
+    def chat_with_model():
+        try:
+            print("Processing chat request...", file=sys.stderr)
+            
+            text = chat(request.json.get('message', ''))
+            return jsonify({"response": text}), 200
+        except ValueError as ve:
+            print(f"Value error: {ve}", file=sys.stderr)
+            return jsonify({"error": str(ve)}), 400
+        except Exception as e:
+            print(f"Error processing chat request: {e}", file=sys.stderr)
             return jsonify({"error": str(e)}), 500
         
     @app.route('/tasks', methods=['GET'])

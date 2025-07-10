@@ -44,6 +44,15 @@ task_id3=$(post_multipart "${auth_token}" "${url}/process/appliance" "${file3}" 
 echo ""
 echo "Task ID for file3: ${task_id3}"
 
+json=$(jq -n \
+  --arg message "Hello, are you alive" \
+  --argjson form "$(cat "${schema}")" \
+  '{message: $message, form: $form}')
+
+post_json "${auth_token}" "${url}/process/text" "${json}"
+
+post_json "${auth_token}" "${url}/chat" '{"message": "Hello, this is a chat test message."}'
+
 post_file "${auth_token}" "${url}/process/ocr" "${file1}" "${schema}"
 
 post_file "${auth_token}" "${url}/process/ocr" "${file2}" "${schema}"

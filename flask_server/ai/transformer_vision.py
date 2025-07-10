@@ -45,8 +45,8 @@ def load_model():
     # it will have to download the model, which might take a while.
     model_kwargs={"device_map": "auto", "torch_dtype": dtype}
     processor_kwargs={"device_map": "gpu"}
-    tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/home/liam/reader_api/workdir/cache')
-    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/home/liam/reader_api/workdir/cache', use_fast=True)
+    tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
+    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
     print(f"Model {model_name} loaded successfully", file=sys.stderr)
     model_i = from_transformers(tf_model, tf_processor)
@@ -96,13 +96,13 @@ def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
     return imagenames
 
 def process_vision_multiple(file_path, schema):
-    file_path = replace_containerized_path(file_path)
+    #file_path = replace_containerized_path(file_path)
     
     _model_i, _tf_processor, _device, _dtype = get_model()
 
     if file_path.lower().endswith('.pdf'):
         # conver to list of images
-        imagenames = convert_pdf_to_images(file_path, output_dir='/home/liam/reader_api/workdir/processing')
+        imagenames = convert_pdf_to_images(file_path, output_dir='/app/workdir/processing')
     else:
         # file is an image
         imagenames = [file_path]
@@ -158,7 +158,7 @@ def process_vision_multiple(file_path, schema):
     return results
 
 def process_vision(file_path, schema):
-    file_path = replace_containerized_path(file_path)
+    #file_path = replace_containerized_path(file_path)
     # replace the containerized file path with the actual file path
     
     
