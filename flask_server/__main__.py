@@ -24,12 +24,14 @@ from flask_server.tasks import process_file_task, process_home_task, process_pla
 load_dotenv()
 
 def create_app(app):
+    BASE_URL = os.getenv("BASE_URL", "") # serv at root by default
+    
     @app.before_request
     def verify_api_key():
         # root path and docs path are public
-        if request.path == '/' and request.method == 'GET' and len(request.path) == 1:
+        if request.path == BASE_URL + '/' and request.method == 'GET' and len(request.path) == 1:
             return
-        elif request.path == '/docs' and request.method == 'GET' and len(request.path) == 5:
+        elif request.path == BASE_URL + '/docs' and request.method == 'GET' and len(request.path) == 5:
             return
         token = request.headers.get("Authorization")
         if not token:
@@ -43,7 +45,7 @@ def create_app(app):
             print("Invalid or expired token")
             return jsonify({"error": "Invalid or expired token"}), 401
 
-    @app.route('/process/file', methods=['POST'])
+    @app.route(BASE_URL + '/process/file', methods=['POST'])
     def process_file_default():
         try:
             if queue_full():
@@ -61,7 +63,7 @@ def create_app(app):
             return jsonify({"error": str(e)}), 500
 
         
-    @app.route('/process/home', methods=['POST'])
+    @app.route(BASE_URL + '/process/home', methods=['POST'])
     def process_home_report():
         try:
             if queue_full():
@@ -79,7 +81,7 @@ def create_app(app):
             print(f"Error enqueuing home report processing task: {e}")
             return jsonify({"error": str(e)}), 500
         
-    @app.route('/process/appliance', methods=['POST'])
+    @app.route(BASE_URL + '/process/appliance', methods=['POST'])
     def process_appliance_photo():
         try:
             
@@ -99,7 +101,7 @@ def create_app(app):
             print(f"Error enqueuing appliance photo processing task: {e}")
             return jsonify({"error": str(e)}), 500
         
-    @app.route('/process/ocr', methods=['POST']) 
+    @app.route(BASE_URL + '/process/ocr', methods=['POST']) 
     def tika_process():                                       # consider changing this to a task
         # get the OCR result from Tika
         try:
@@ -121,7 +123,7 @@ def create_app(app):
             print(f"Error processing with Tika: {e}", file=sys.stderr)
             return jsonify({"error": str(e)}), 500
         
-    @app.route('/process/text', methods=['POST'])
+    @app.route(BASE_URL + '/process/text', methods=['POST'])
     def plaintext_process():
         try:
             print("Processing plaintext file...", file=sys.stderr)
@@ -136,7 +138,7 @@ def create_app(app):
             print(f"Error processing plaintext file: {e}", file=sys.stderr)
             return jsonify({"error": str(e)}), 500
         
-    @app.route('/chat', methods=['POST'])
+    @app.route(BASE_URL + '/chat', methods=['POST'])
     def chat_with_model():
         try:
             print("Processing chat request...", file=sys.stderr)
@@ -150,7 +152,7 @@ def create_app(app):
             print(f"Error processing chat request: {e}", file=sys.stderr)
             return jsonify({"error": str(e)}), 500
         
-    @app.route('/tasks', methods=['GET'])
+    @app.route(BASE_URL + '/tasks', methods=['GET'])
     def get_tasks():
         try:
             tasks = celery.control.inspect().active() or {}
@@ -163,7 +165,7 @@ def create_app(app):
             print(f"Error retrieving tasks: {e}")
             return jsonify({"error": str(e)}), 500
         
-    @app.route('/tasks/<task_id>', methods=['GET'])
+    @app.route(BASE_URL + '/tasks/<task_id>', methods=['GET'])
     def get_task(task_id):
         try:
             task = celery.AsyncResult(task_id)
@@ -180,7 +182,7 @@ def create_app(app):
             print(f"Error retrieving task {task_id}: {e}", file=sys.stderr)
             return jsonify({"error": str(e)}), 500
         
-    @app.route('/clear', methods=['POST'])
+    @app.route(BASE_URL + '/clear', methods=['POST'])
     def clear_uploads():
         try:
             # clear tasks
@@ -199,11 +201,11 @@ def create_app(app):
             print(f"Error clearing uploads: {e}")
             return jsonify({"error": str(e)}), 500
         
-    @app.route('/', methods=['GET'])
+    @app.route(BASE_URL + '/', methods=['GET'])
     def index():
         return homePage(default_home_form, default_appliance_form, example_schema)
 
-    @app.route('/docs', methods=['GET'])
+    @app.route(BASE_URL + '/docs', methods=['GET'])
     def docs():
         try:
             with open('flask_server/openapi_spec.yaml', 'r') as f: 

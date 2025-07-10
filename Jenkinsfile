@@ -32,6 +32,8 @@ pipeline {
         REDIS_CONTAINER_NAME='redis-default'
         REDIS_IMAGE='redis:latest'
         REDIS_PORT='6380'
+        MCP_API_KEY='your_mcp_api_key_here'
+        BASE_URL=''
     }
     stages {
         stage('Clone') {
