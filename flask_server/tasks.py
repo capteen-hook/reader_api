@@ -28,6 +28,11 @@ def process_home_task(file_path, schema=default_home_form):
     content = home_loop(text, schema)
     return content
 
+@celery.task
+def process_plaintext_task(file_path, schema=example_schema):
+    content = process_plaintext(file_path, schema)
+    return content
+
 # @celery.task
 # def process_vision_task(file_path, schema=default_appliance_form):
 #     content = process_vision(file_path, schema)
