@@ -62,7 +62,7 @@ services:
       - ${WORK_DIR:-./workdir}:/app/workdir
       - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
 
-  app:
+  react_server:
     build: 
       context: ./react_server
       dockerfile: Dockerfile
