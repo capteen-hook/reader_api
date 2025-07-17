@@ -62,6 +62,15 @@ services:
       - ${WORK_DIR:-./workdir}:/app/workdir
       - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
 
+  app:
+    build: 
+      context: ./react_server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+
   tika:
     image: ${TIKA_IMAGE:-apache/tika:latest-full}
     container_name: ${TIKA_CONTAINER_NAME:-tika}
