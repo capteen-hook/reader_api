@@ -84,7 +84,7 @@ export async function POST(req: Request) {
   const this_mcpTools = await getMcpTools();
 
   const result = streamText({
-    model: ollama("qwen3:8b"),
+    model: ollama(process.env.MODEL_NAME || "qwen3:8b"),
     messages,
     // forward system prompt and tools from the frontend
     toolCallStreaming: true,
