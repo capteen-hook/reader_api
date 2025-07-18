@@ -1,4 +1,4 @@
-import { ollama } from "ollama-ai-provider";
+import { createOllama, OllamaProviderSettings } from "ollama-ai-provider";
 import { frontendTools } from "@assistant-ui/react-ai-sdk";
 import { streamText } from "ai";
 import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio';
@@ -6,6 +6,14 @@ import { experimental_createMCPClient as createMCPClient, ToolSet } from "ai";
 import path from "path";
 
 export const runtime = "nodejs";
+
+const ollamaSettings: OllamaProviderSettings = {
+  baseURL: (process.env.OLLAMA_URL || "http://localhost:11434/") + "api",
+}
+
+const ollama = createOllama(ollamaSettings);
+
+console.log("Ollama API URL:", ollamaSettings.baseURL);
 
 async function weatherTool() {
   const mcpServerPath = path.resolve(

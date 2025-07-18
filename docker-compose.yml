@@ -50,7 +50,7 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://user:password@rabbitmq:5672//}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
-      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434/}
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434/}
       POPPLER_PATH: ${POPPLER_PATH:-}
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
       PORT: ${PORT:-8000}
@@ -74,6 +74,7 @@ services:
       MC_API_KEY: ${MC_API_KEY:-}
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
       FLASK_SERVER_URL: ${FLASK_SERVER_URL:-http://flask_server:8000}
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434/}
 
   tika:
     image: ${TIKA_IMAGE:-apache/tika:latest-full}
