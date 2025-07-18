@@ -37,14 +37,14 @@ def search_tavily(query):
     #     "query": ""
     # }'
     
-    if not os.getenv('TAVILY_KEY'):
-        raise ValueError("TAVILY_KEY environment variable is not set.")
+    if not os.getenv('TAVILY_API_KEY'):
+        raise ValueError("TAVILY_API_KEY environment variable is not set.")
     
     url = "https://api.tavily.com/search"
     
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f"Bearer {os.getenv('TAVILY_KEY', '')}"
+        'Authorization': f"Bearer {os.getenv('TAVILY_API_KEY', '')}"
     }
     
     data = {

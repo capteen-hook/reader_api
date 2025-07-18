@@ -23,7 +23,7 @@ services:
       POPPLER_PATH: ${POPPLER_PATH:-}
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
       PORT: ${PORT:-8000}
-      TAVILY_KEY: ${TAVILY_KEY:-}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
     volumes:
       - ${WORK_DIR:-./workdir}:/app/workdir
@@ -54,7 +54,7 @@ services:
       POPPLER_PATH: ${POPPLER_PATH:-}
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
       PORT: ${PORT:-8000}
-      TAVILY_KEY: ${TAVILY_KEY:-none}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-none}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
     networks:
       - tika_network
@@ -69,7 +69,11 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - NODE_ENV=production
+      NODE_ENV: production
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      MC_API_KEY: ${MC_API_KEY:-}
+      MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
+      FLASK_SERVER_URL: ${FLASK_SERVER_URL:-http://flask_server:8000}
 
   tika:
     image: ${TIKA_IMAGE:-apache/tika:latest-full}
