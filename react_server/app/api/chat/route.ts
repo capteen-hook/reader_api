@@ -110,7 +110,11 @@ export async function POST(req: Request) {
   });
   
   // Starting to stream response: warningsPromise,usagePromise,finishReasonPromise,providerMetadataPromise,textPromise,reasoningPromise,reasoningDetailsPromise,sourcesPromise,filesPromise,toolCallsPromise,toolResultsPromise,requestPromise,responsePromise,stepsPromise,output,addStream,closeStream,baseStream
-  console.log("Starting to stream response: " + Object.keys(result));
+  // console.log("Starting to stream response: " + Object.keys(result));
+
+  console.log("Tool:", result.toolResults);
+  console.log("Tool calls:", result.toolCalls);
+  console.log("Text:", result.text);
 
   return result.toDataStreamResponse();
 }
