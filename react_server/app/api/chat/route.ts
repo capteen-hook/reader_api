@@ -91,6 +91,11 @@ export async function POST(req: Request) {
 
   const this_mcpTools = await getMcpTools();
 
+  console.log("Received messages:");
+  for (const message of messages) {
+    console.log(`- ${message.role}: ${message.content}`);
+  }
+
   const result = streamText({
     model: ollama(process.env.MODEL_NAME || "qwen3:8b"),
     messages,
@@ -103,6 +108,9 @@ export async function POST(req: Request) {
     },
     onError: console.log,
   });
+  
+  // Starting to stream response: warningsPromise,usagePromise,finishReasonPromise,providerMetadataPromise,textPromise,reasoningPromise,reasoningDetailsPromise,sourcesPromise,filesPromise,toolCallsPromise,toolResultsPromise,requestPromise,responsePromise,stepsPromise,output,addStream,closeStream,baseStream
+  console.log("Starting to stream response: " + Object.keys(result));
 
   return result.toDataStreamResponse();
 }

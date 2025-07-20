@@ -237,9 +237,14 @@ const AssistantActionBar: FC = () => {
       hideWhenRunning
       autohide="not-last"
       autohideFloat="single-branch"
-      className="text-muted-foreground flex gap-1 col-start-3 row-start-2 -ml-1 data-[floating]:bg-background data-[floating]:absolute data-[floating]:rounded-md data-[floating]:border data-[floating]:p-1 data-[floating]:shadow-sm"
+      className="text-muted-foreground flex gap-1 col-start-2 row-start-3 -ml-1 data-[floating]:bg-background data-[floating]:absolute data-[floating]:rounded-md data-[floating]:border data-[floating]:p-1 data-[floating]:shadow-sm"
     >
-      <ActionBarPrimitive.Copy asChild>
+      <ActionBarPrimitive.Reload asChild className="align-left mr-5">
+        <TooltipIconButton tooltip="Refresh">
+          <RefreshCwIcon />
+        </TooltipIconButton>
+      </ActionBarPrimitive.Reload>
+      <ActionBarPrimitive.Copy asChild className="align-right ml-5">
         <TooltipIconButton tooltip="Copy">
           <MessagePrimitive.If copied>
             <CheckIcon />
@@ -249,11 +254,6 @@ const AssistantActionBar: FC = () => {
           </MessagePrimitive.If>
         </TooltipIconButton>
       </ActionBarPrimitive.Copy>
-      <ActionBarPrimitive.Reload asChild>
-        <TooltipIconButton tooltip="Refresh">
-          <RefreshCwIcon />
-        </TooltipIconButton>
-      </ActionBarPrimitive.Reload>
     </ActionBarPrimitive.Root>
   );
 };
@@ -271,18 +271,14 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
       )}
       {...rest}
     >
-      <BranchPickerPrimitive.Previous asChild>
-        <TooltipIconButton tooltip="Previous">
-          <ChevronLeftIcon />
-        </TooltipIconButton>
+      <BranchPickerPrimitive.Previous asChild className="mr-4">
+        <TooltipIconButton tooltip="Previous" />
       </BranchPickerPrimitive.Previous>
-      <span className="font-medium">
+      <span className="font-medium ml-3 mr-2">
         <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
       </span>
-      <BranchPickerPrimitive.Next asChild>
-        <TooltipIconButton tooltip="Next">
-          <ChevronRightIcon />
-        </TooltipIconButton>
+      <BranchPickerPrimitive.Next asChild className="ml-2">
+        <TooltipIconButton tooltip="Next" />
       </BranchPickerPrimitive.Next>
     </BranchPickerPrimitive.Root>
   );

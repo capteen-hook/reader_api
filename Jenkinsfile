@@ -13,6 +13,7 @@ pipeline {
         WORK_DIR='./workdir'
         MODEL_NAME='gemma3:4b'
         POPPLER_PATH='C:\\Program Files\\Poppler\\poppler-24.08.0\\Library\\bin # On linux, you can leave this empty if you have poppler installed in your PATH'
+        VISION_MODE=True
         LIGHTWEIGHT_MODE='True # not used currently'
         JWT_SECRET_KEY='your_key_here'
         TAVILY_KEY='your_key_here'

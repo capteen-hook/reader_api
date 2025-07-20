@@ -12,14 +12,14 @@ import jwt
 import sys
 from functools import wraps
 from celery import Celery
-# from flask_server.transformer_vision import process_vision
+from flask_server.transformer_vision import process_vision
 from flask_server.tools.web_search import search_tavily
 from flask_server.ai.prompts import fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema
 from flask_server.test_page import homePage
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
 from flask_server.ai.process import process_tika, chat #, process_plaintext, home_loop, process_file
 from flask_server.celery import celery
-from flask_server.tasks import process_file_task, process_home_task, process_plaintext_task, queue_full#, process_vision_task
+from flask_server.tasks import process_file_task, process_home_task, process_plaintext_task, queue_full, process_vision_task
     
 load_dotenv()
 
@@ -93,8 +93,11 @@ def create_app(app):
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', default_appliance_form)
             # WIP!
-            #id = process_vision_task.apply_async(args=[file_path, schema])
-            id = process_file_task.apply_async(args=[file_path, schema])
+            if os.getenv("VISION_MODE", "false").lower() == "true":
+                id = process_vision_task.apply_async(args=[file_path, schema])
+            else:
+                id = process_file_task.apply_async(args=[file_path, schema])
+                
             return jsonify({"task_id": id.id}), 200
 
         except Exception as e:
