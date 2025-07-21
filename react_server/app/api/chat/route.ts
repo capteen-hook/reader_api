@@ -13,25 +13,9 @@ const ollamaSettings: OllamaProviderSettings = {
 
 const ollama = createOllama(ollamaSettings);
 
-console.log("Ollama API URL:", ollamaSettings.baseURL);
-
-async function weatherTool() {
-  const mcpServerPath = path.resolve(
-    "node_modules/.bin/mcp-server-weather" 
-  );
-
-  const transport = new Experimental_StdioMCPTransport({
-    command: mcpServerPath,
-  });
-
-  const mcpClient = await createMCPClient({ transport });
-
-  return await mcpClient.tools();
-}
-
-// async function searchTool() {
+// async function weatherTool() {
 //   const mcpServerPath = path.resolve(
-//     "node_modules/.bin/tavily-mcp"
+//     "node_modules/.bin/mcp-server-weather" 
 //   );
 
 //   const transport = new Experimental_StdioMCPTransport({
@@ -42,6 +26,20 @@ async function weatherTool() {
 
 //   return await mcpClient.tools();
 // }
+
+async function searchTool() {
+  const mcpServerPath = path.resolve(
+    "node_modules/.bin/tavily-mcp"
+  );
+
+  const transport = new Experimental_StdioMCPTransport({
+    command: mcpServerPath,
+  });
+
+  const mcpClient = await createMCPClient({ transport });
+
+  return await mcpClient.tools();
+}
 
 // async function shipshapeTool() {
 //   // npx mcp-remote@latest https://dev.dashboard.shipshape.ai/sse --transport=sse-only --header X-API-KEY:dummy_key
@@ -63,11 +61,11 @@ async function weatherTool() {
 // }
 
 async function createMCPTools(): Promise<ToolSet> {
-  const weather = await weatherTool();
-  // const search = await searchTool();
+  // const weather = await weatherTool();
+  const search = await searchTool();
   // const shipshape = await shipshapeTool();
 
-  return weather
+  return search
 
   // const mcpTools: ToolSet = {
   //   ...weather,
@@ -112,9 +110,13 @@ export async function POST(req: Request) {
   // Starting to stream response: warningsPromise,usagePromise,finishReasonPromise,providerMetadataPromise,textPromise,reasoningPromise,reasoningDetailsPromise,sourcesPromise,filesPromise,toolCallsPromise,toolResultsPromise,requestPromise,responsePromise,stepsPromise,output,addStream,closeStream,baseStream
   // console.log("Starting to stream response: " + Object.keys(result));
 
-  console.log("Tool:", result.toolResults);
-  console.log("Tool calls:", result.toolCalls);
-  console.log("Text:", result.text);
+  // console.log("Tool:", await result.toolResults);
+  // console.log("Tool calls:", await result.toolCalls);
+  // console.log("Text:", await result.text);
+
+  // print the serialized result
+
+  console.log("Serialized result:", result.toDataStreamResponse());
 
   return result.toDataStreamResponse();
 }

@@ -34,6 +34,7 @@ pipeline {
         REDIS_IMAGE='redis:latest'
         REDIS_PORT='6380'
         MCP_API_KEY='your_mcp_api_key_here'
+R       EADER_API_KEY='your_key_here'
         BASE_URL=''
     }
     stages {
