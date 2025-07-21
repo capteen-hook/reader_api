@@ -11,7 +11,7 @@ from flask_server.ai.prompts import fill_form, fill_home_form, fill_home_form_fo
 from flask_server.test_page import homePage
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
 from flask_server.ai.process import process_tika, process_plaintext, home_loop, process_file
-#from flask_server.ai.transformer_vision import process_vision
+from flask_server.ai.transformer_vision import process_vision
     
 
 # Set a task queue limit
@@ -19,6 +19,7 @@ MAX_TASKS = int(os.getenv('MAX_TASKS', 30))
 
 @celery.task
 def process_file_task(file_path, schema=example_schema):
+    print(f"Processing file task: {file_path} with schema: {schema}", file=sys.stderr)
     processed_content = process_file(file_path, schema)
     return processed_content
     
@@ -33,10 +34,10 @@ def process_plaintext_task(file_path, schema=example_schema):
     content = process_plaintext(file_path, schema)
     return content
 
-# @celery.task
-# def process_vision_task(file_path, schema=default_appliance_form):
-#     content = process_vision(file_path, schema)
-#     return content
+@celery.task
+def process_vision_task(file_path, schema=default_appliance_form):
+    content = process_vision(file_path, schema)
+    return content
 
 def queue_full():
     try:

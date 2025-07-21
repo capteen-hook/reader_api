@@ -12,7 +12,6 @@ import jwt
 import sys
 from functools import wraps
 from celery import Celery
-from flask_server.transformer_vision import process_vision
 from flask_server.tools.web_search import search_tavily
 from flask_server.ai.prompts import fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema
 from flask_server.test_page import homePage
@@ -55,6 +54,8 @@ def create_app(app):
 
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', example_schema)
+            
+            print(f"Processing file: {file_path} with schema: {schema}", file=sys.stderr)
             
             id = process_file_task.apply_async(args=[file_path, schema])
             return jsonify({"task_id": id.id}), 200
@@ -175,6 +176,7 @@ def create_app(app):
             if task.state == 'PENDING':
                 response = {'state': task.state, 'status': 'Pending...'}
             elif task.state == 'SUCCESS':
+                print(f"Task {task_id} completed successfully: {task}", file=sys.stderr)
                 response = {'state': task.state, 'result': task.result}
             elif task.state == 'FAILURE':
                 response = {'state': task.state, 'error': str(task.info)}

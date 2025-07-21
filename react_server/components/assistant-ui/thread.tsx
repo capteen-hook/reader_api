@@ -11,8 +11,8 @@ import type { FC } from "react";
 import {
   ArrowDownIcon,
   CheckIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  // ChevronLeftIcon,
+  // ChevronRightIcon,
   CopyIcon,
   PencilIcon,
   RefreshCwIcon,
