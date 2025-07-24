@@ -15,13 +15,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     
 # Install ROCm for AMD GPU support
 # Install ROCm
-RUN apt-get update && apt-get install -y \
-    rocm-dev \
-    rocm-utils \
-    rocm-dkms \
-    rocm-libs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     rocm-dev \
+#     rocm-utils \
+#     rocm-dkms \
+#     rocm-libs \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/*
 
 ENV PATH="/root/.cargo/bin:${PATH}"
 
