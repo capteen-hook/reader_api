@@ -57,34 +57,43 @@ def process_file(file_path, schema=example_schema):
         if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp']:
             # For image files, we can use vision processing
             # but for now- just try and get text from it with Tika
-            text = process_vision(file_path)
-            #text = process_tika(file_path)
+            result = process_vision(file_path, schema)
+            
+            try:
+                # Attempt to parse the result as JSON
+                return json.loads(result)
+            except json.JSONDecodeError as e:
+                # Log the error and the problematic result
+                print(f"Error decoding JSON: {e}")
+                print(f"Result string: {result}")
+                raise ValueError("Failed to parse JSON from the generator output.")
+            
         else:
             # For PDF files, use Tika to extract text
             text = process_tika(file_path)
+                
+            if not text:
+                raise ValueError("No text extracted from the file")
             
-        if not text:
-            raise ValueError("No text extracted from the file")
+            if not schema:
+                raise ValueError("Invalid form schema provided")
+            
+            prompt = fill_form(text, schema)
         
-        if not schema:
-            raise ValueError("Invalid form schema provided")
-        
-        prompt = fill_form(text, schema)
-    
-        generator = Generator(_model, schema)
-        # Process the text with the prompt
-        result = generator(prompt)
-        try:
-            # Attempt to parse the result as JSON
-            return json.loads(result)
-        except json.JSONDecodeError as e:
-            # Log the error and the problematic result
-            print(f"Error decoding JSON: {e}")
-            print(f"Result string: {result}")
-            raise ValueError("Failed to parse JSON from the generator output.")
-    except Exception as e:
-        print(f"Error processing file {file_path}: {e}")
-        raise Exception(f"Error processing file {file_path}: {e}")
+            generator = Generator(_model, schema)
+            # Process the text with the prompt
+            result = generator(prompt)
+            try:
+                # Attempt to parse the result as JSON
+                return json.loads(result)
+            except json.JSONDecodeError as e:
+                # Log the error and the problematic result
+                print(f"Error decoding JSON: {e}")
+                print(f"Result string: {result}")
+                raise ValueError("Failed to parse JSON from the generator output.")
+        except Exception as e:
+            print(f"Error processing file {file_path}: {e}")
+            raise Exception(f"Error processing file {file_path}: {e}")
 
 def home_loop(text, schema):
     schemaF = validate_form(schema)
