@@ -7,6 +7,7 @@ from outlines import from_ollama, Generator
 from flask_server.ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch, default_home_form, default_appliance_form
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
 from flask_server.tools.web_search import search_tavily
+from flask_server.ai.vision import process_vision
 import sys
 
 load_dotenv()
@@ -53,11 +54,11 @@ def process_file(file_path, schema=example_schema):
     try:
         schema = validate_form(schema)
         
-        if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp']:
+        if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp']:
             # For image files, we can use vision processing
             # but for now- just try and get text from it with Tika
-            # text = process_vision(file_path)
-            text = process_tika(file_path)
+            text = process_vision(file_path)
+            #text = process_tika(file_path)
         else:
             # For PDF files, use Tika to extract text
             text = process_tika(file_path)

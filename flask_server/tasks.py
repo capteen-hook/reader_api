@@ -36,6 +36,7 @@ def process_plaintext_task(file_path, schema=example_schema):
 
 @celery.task
 def process_vision_task(file_path, schema=default_appliance_form):
+    print(f"Processing vision task for file: {file_path} with schema: {schema}", file=sys.stderr)
     content = process_vision(file_path, schema)
     return content
 
