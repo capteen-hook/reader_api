@@ -64,6 +64,8 @@ services:
     devices:
       - /dev/kfd
       - /dev/dri
+    cap_add:
+      - SYS_PTRACE
     group_add:
       - video
       - render
