@@ -31,7 +31,7 @@ COPY ./requirements.txt /app/flask_server/requirements.txt
 # Install Python dependencies
 RUN pip install --upgrade pip
 
-RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.3
+RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.4
 
 RUN pip install --no-cache-dir -r /app/flask_server/requirements.txt
 
