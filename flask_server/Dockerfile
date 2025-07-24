@@ -13,6 +13,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
     
+# Install ROCm for AMD GPU support
+# Install ROCm
+RUN apt-get update && apt-get install -y \
+    rocm-dev \
+    rocm-utils \
+    rocm-dkms \
+    rocm-libs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Copy only requirements.txt first to leverage Docker's caching
@@ -20,6 +30,9 @@ COPY ./requirements.txt /app/flask_server/requirements.txt
 
 # Install Python dependencies
 RUN pip install --upgrade pip
+
+RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.3
+
 RUN pip install --no-cache-dir -r /app/flask_server/requirements.txt
 
 # Copy the rest of the application files

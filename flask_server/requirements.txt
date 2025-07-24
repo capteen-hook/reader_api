@@ -7,12 +7,14 @@ numpy
 ollama
 pdf2image
 transformers
-torch
+# torch
+# torchvision
 accelerate
 datasets
-torchvision
 beautifulsoup4
 pyjwt
 celery
 dash
 redis
+torch==2.7.1+rocm6.3
+torchvision==0.15.1+rocm6.3
