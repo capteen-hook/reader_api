@@ -62,8 +62,8 @@ services:
       - ${WORK_DIR:-./workdir}:/app/workdir
       - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
     devices:
-      - /dev/kfd
       - /dev/dri
+      - /dev/kfd
     cap_add:
       - SYS_PTRACE
     group_add:
