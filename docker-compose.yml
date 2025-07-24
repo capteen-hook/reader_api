@@ -67,8 +67,6 @@ services:
     group_add:
       - video
       - render
-    cap_add:
-      - SYS_PYTRACE
     security_opt:
       - seccomp:unconfined
 
