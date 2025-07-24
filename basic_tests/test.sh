@@ -13,7 +13,7 @@ fi
 auth_token=$2
 
 if [[ -z "${auth_token}" ]]; then
-    auth_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMjMsImV4cCI6MjA2NzM4ODQ3OX0.HTzcIETW0sFSiHu31HLbZaJjlSvYo25OumnGdt_7xUM"
+    auth_token=""
 fi
 
 echo "Running basic tests against ${url}"

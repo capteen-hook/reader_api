@@ -1,13 +1,14 @@
 "use client";
 
 import { PropsWithChildren, useEffect, useState, type FC } from "react";
-import { CircleXIcon, FileIcon, PaperclipIcon } from "lucide-react";
+import { CircleXIcon, FileIcon, PaperclipIcon, FileTextIcon, VideotapeIcon } from "lucide-react";
 import {
   AttachmentPrimitive,
   ComposerPrimitive,
   MessagePrimitive,
   useAttachment,
 } from "@assistant-ui/react";
+import { CustomAddAttachment } from "./custom-add-attachment";
 import { useShallow } from "zustand/shallow";
 import {
   Tooltip,
@@ -190,9 +191,12 @@ export const ComposerAttachments: FC = () => {
   );
 };
 
-export const ComposerAddAttachment: FC = () => {
+export const ComposerAddFile: FC = () => {
   return (
-    <ComposerPrimitive.AddAttachment asChild>
+    <CustomAddAttachment
+      processType="file"
+      asChild
+    >
       <TooltipIconButton
         className="my-2.5 size-8 p-2 transition-opacity ease-in"
         tooltip="Add Attachment"
@@ -200,7 +204,41 @@ export const ComposerAddAttachment: FC = () => {
       >
         <PaperclipIcon />
       </TooltipIconButton>
-    </ComposerPrimitive.AddAttachment>
+    </CustomAddAttachment>
+  );
+};
+
+export const ComposerAddReport: FC = () => {
+  return (
+    <CustomAddAttachment
+      processType="report"
+      asChild
+    >
+      <TooltipIconButton
+        className="my-2.5 size-8 p-2 transition-opacity ease-in"
+        tooltip="Add Report Attachment"
+        variant="ghost"
+      >
+        <FileTextIcon />
+      </TooltipIconButton>
+    </CustomAddAttachment>
+  );
+};
+
+export const ComposerAddAppliance: FC = () => {
+  return (
+    <CustomAddAttachment
+      processType="appliance"
+      asChild
+    >
+      <TooltipIconButton
+        className="my-2.5 size-8 p-2 transition-opacity ease-in"
+        tooltip="Add Appliance Attachment"
+        variant="ghost"
+      >
+        <VideotapeIcon />
+      </TooltipIconButton>
+    </CustomAddAttachment>
   );
 };
 

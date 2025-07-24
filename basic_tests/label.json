@@ -1,0 +1,42 @@
+{
+    "properties": {
+        "serial_number": {
+            "type": "string",
+            "description": "The serial number of the appliance."
+        },
+        "model_number": {
+            "type": "string",
+            "description": "The model number of the appliance."
+        },
+        "manufacturer": {
+            "type": "string",
+            "description": "The brand name of the appliance manufacturer."
+        },
+        "appliance_type": {
+            "type": "string",
+            "description": "The type of appliance, e.g., 'refrigerator', 'water heater', 'dishwasher'."
+        },
+        "date": {
+            "type": "string",
+            "format": "date",
+            "description": "The manufacture or installation date of the appliance."
+        },
+        "additional_info": {
+            "type": "string",
+            "description": "Any additional information about the appliance."
+        },
+        "capabilities": {
+            "type": "object",
+            "description": "Miscellaneous capabilities of the appliance, such as 'volts', 'watts', 'volume', or other specifications.",
+            "additionalProperties": true
+        }
+    },
+    "required": [
+        "serial_number",
+        "model_number",
+        "manufacturer",
+        "appliance_type"
+    ],
+    "title": "Manufacturer Label",
+    "type": "object"
+}

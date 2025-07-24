@@ -27,7 +27,9 @@ import { ToolFallback } from "./tool-fallback";
 
 import {
   ComposerAttachments,
-  ComposerAddAttachment,
+  ComposerAddFile,
+  ComposerAddReport,
+  ComposerAddAppliance,
 } from "@/components/assistant-ui/attachment";
 
 import { UserMessageAttachments } from "@/components/assistant-ui/attachment";
@@ -128,9 +130,12 @@ const Composer: FC = () => {
         placeholder="Write a message..."
         className="placeholder:text-muted-foreground max-h-40 flex-grow resize-none border-none bg-transparent px-2 py-4 text-sm outline-none focus:ring-0 disabled:cursor-not-allowed"
       />
-      <div className="flex items-center gap-30 w-full max-w-[var(--thread-max-width)] px-2.5 pt-2">
+      {/* flex row with all the buttons for attachments and actions */}
+      <div className="flex items-center gap-50 w-full max-w-[var(--thread-max-width)] px-4.5 pt-3">
         <ComposerAttachments />
-        <ComposerAddAttachment />
+        <ComposerAddFile />
+        <ComposerAddReport />
+        <ComposerAddAppliance />
         <ComposerAction />
       </div>
     </ComposerPrimitive.Root>

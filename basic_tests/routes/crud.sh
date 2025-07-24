@@ -94,6 +94,7 @@ get() {
     response=$(curl -s -i -X GET -H "Authorization: Bearer ${auth_token}" "${route}")
     if is_200 "${response}"; then
         echo -n "."
+        echo "${response}"
     else
         echo ""
         echo "GET ${route} failed: ${response}"

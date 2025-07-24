@@ -132,14 +132,14 @@ def process_tika(file_path):
     
     if file_path.endswith('.pdf'):
         content_type = 'application/pdf'
-    elif file_path.endswith('.png') or file_path.endswith('.jpg') or file_path.endswith('.jpeg'):
+    elif file_path.endswith('.png') or file_path.endswith('.jpg') or file_path.endswith('.jpeg') or file_path.endswith('.webp'):
         content_type = 'image/' + file_path.split('.')[-1]
     elif file_path.endswith('.txt') or file_path.endswith('.md') or file_path.endswith('.csv') or file_path.endswith('.json') or file_path.endswith('.yaml'):
         # no need for tika
         with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
     else:
-        raise ValueError("Unsupported file type. Only PDF and image, and text files are supported.")
+        raise ValueError("Unsupported file type. Only PDF and image, and text files are supported. File was of type: " + file_path.split('.')[-1])
             
             
     headers = {
@@ -158,6 +158,9 @@ def process_tika(file_path):
         return response.text.split('<div class="ocr">')[1].split('</div>')[0]
     except IndexError:
         print("Tika response does not contain expected OCR -> may have found no text")
+        
+        print("Full Tika response::")
+        print(response.text)
         return response.text
     
 def process_plaintext(text, schema, prompt=None):
