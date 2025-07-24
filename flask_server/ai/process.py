@@ -91,9 +91,9 @@ def process_file(file_path, schema=example_schema):
                 print(f"Error decoding JSON: {e}")
                 print(f"Result string: {result}")
                 raise ValueError("Failed to parse JSON from the generator output.")
-        except Exception as e:
-            print(f"Error processing file {file_path}: {e}")
-            raise Exception(f"Error processing file {file_path}: {e}")
+    except Exception as e:
+        print(f"Error processing file {file_path}: {e}")
+        raise Exception(f"Error processing file {file_path}: {e}")
 
 def home_loop(text, schema):
     schemaF = validate_form(schema)
