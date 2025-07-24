@@ -64,6 +64,11 @@ services:
     devices:
       - /dev/kfd
       - /dev/dri
+    group_add:
+      - video
+      - render
+    cap_add:
+      - SYS_PYTRACE
     security_opt:
       - seccomp:unconfined
 
