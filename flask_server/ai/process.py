@@ -7,7 +7,7 @@ from outlines import from_ollama, Generator
 from flask_server.ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch, default_home_form, default_appliance_form
 from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
 from flask_server.tools.web_search import search_tavily
-from flask_server.ai.vision import process_vision
+from flask_server.ai.transformer_vision import process_vision
 import sys
 
 load_dotenv()
