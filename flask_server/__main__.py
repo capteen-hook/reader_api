@@ -98,7 +98,7 @@ def create_app(app):
                 print("Vision mode is enabled, processing with vision task", file=sys.stderr)
                 id = process_vision_task.apply_async(args=[file_path, schema])
             else:
-                print("Vision mode is disabled, processing with file task", file=sys.stderr)
+                print("Vision mode is disabled: " + os.getenv("VISION_MODE", "no env var found"), file=sys.stderr)
                 id = process_file_task.apply_async(args=[file_path, schema])
                 
             return jsonify({"task_id": id.id}), 200
