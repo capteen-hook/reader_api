@@ -67,8 +67,8 @@ services:
     cap_add:
       - SYS_PTRACE
     group_add:
-      - video
-      - render
+      - 44 # video group for GPU access
+      - 991 # render group for GPU access
     security_opt:
       - seccomp:unconfined
 
