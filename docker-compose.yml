@@ -25,6 +25,8 @@ services:
       PORT: ${PORT:-8000}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretkey}
+      VISION_MODE: ${VISION_MODE:-false}
+      LIGHTWEIGHT_MODE: ${LIGHTWEIGHT_MODE:-false}
     volumes:
       - ${WORK_DIR:-./workdir}:/app/workdir
       - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
