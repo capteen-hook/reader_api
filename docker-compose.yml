@@ -76,6 +76,7 @@ services:
     build: 
       context: ./react_server
       dockerfile: Dockerfile
+    container_name: ${REACT_SERVER_CONTAINER_NAME:-react_server}
     extra_hosts:
       - "host.docker.internal:host-gateway"  # For Ollama access
     ports:
