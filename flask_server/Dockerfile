@@ -1,4 +1,5 @@
-FROM rocm/pytorch:rocm6.4.1_ubuntu24.04_py3.12_pytorch_release_2.6.0
+ARG BASE_IMAGE=rocm/pytorch:rocm6.4.1_ubuntu24.04_py3.12_pytorch_release_2.6.0
+FROM ${BASE_IMAGE}
 
 WORKDIR /app
 
