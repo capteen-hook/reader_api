@@ -3,6 +3,8 @@ services:
     build:
       context: ./flask_server
       dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: ${FLASK_SERVER_BASE_IMAGE:-rocm/pytorch:rocm6.4.1_ubuntu24.04_py3.12_pytorch_release_2.6.0}
     image: ${FLASK_SERVER_IMAGE:-flask_server:latest}
     container_name: ${FLASK_SERVER_CONTAINER_NAME:-flask_server}
     extra_hosts:

@@ -38,6 +38,7 @@ pipeline {
         READER_API_KEY='your_key_here'
         BASE_URL=''
         GPU='False'
+        FLASK_SERVER_BASE_IMAGE=python:3.12-slim
     }
     stages {
         stage('Clone') {
