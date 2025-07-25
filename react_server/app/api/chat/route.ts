@@ -62,6 +62,12 @@ async function shipshapeTool() {
 }
 
 async function createMCPTools(): Promise<ToolSet> {
+
+  console.log("Creating MCP tools with environment variables:");
+  console.log("OLLAMA_URL:", process.env.OLLAMA_URL);
+  console.log("MCP_API_KEY:", process.env.MCP_API_KEY);
+  console.log("TAVILY_API_KEY:", process.env.TAVILY_API_KEY);
+
   const weather = await weatherTool();
   const search = await searchTool();
 
