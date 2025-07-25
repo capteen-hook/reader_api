@@ -38,11 +38,11 @@ def load_model():
         processor_class = LlavaProcessor
 
     print(f"Using model: {model_name}", file=sys.stderr)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    device = torch.device("cpu")
+    dtype = torch.float32
     # it will have to download the model, which might take a while.
     model_kwargs={"device_map": "auto", "torch_dtype": dtype}
-    processor_kwargs={"device_map": "gpu"}
+    processor_kwargs={"device_map": "cpu"}
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
     tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
