@@ -17,7 +17,16 @@ async function getReaderStatus() {
 }
 
 async function getMCPStatus() {
-    const res = await fetch("https://dev.dashboard.shipshape.ai/sse")
+    // curl -N https://dev.dashboard.shipshape.ai/sse   -H "X-API-KEY: " -v
+    const key = process.env.MCP_API_KEY
+
+    const res = await fetch("https://dev.dashboard.shipshape.ai/sse", {
+        method: "GET",
+        headers: {
+            "X-API-KEY": key || ""
+        }
+    });
+
     if (!res.ok) {
         return false;
     }
@@ -37,6 +46,10 @@ export default async function StatusMonitor() {
     const ollamaStatus = await getOllamaStatus();
     const readerStatus = await getReaderStatus();
     const mcpStatus = await getMCPStatus();
+
+    console.log("Ollama Status:", ollamaStatus);
+    console.log("Reader API Status:", readerStatus);
+    console.log("MCP Server Status:", mcpStatus);
 
     return (
         <div className="status-monitor">
