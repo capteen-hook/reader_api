@@ -41,8 +41,16 @@ def load_model():
         processor_class = LlavaProcessor
 
     print(f"Using model: {model_name}", file=sys.stderr)
-    device = torch.device("cpu")
-    dtype = torch.float32
+    if os.getenv('GPU', 'True').lower() in ['true', '1', 'yes']:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 7:
+            dtype = torch.float16
+        else:
+            dtype = torch.bfloat16
+        print(f"Tried GPU: {torch.cuda.is_available()}, using device: {device}, dtype: {dtype}", file=sys.stderr)
+    else:
+        device = torch.device("cpu")
+        dtype = torch.float32
     # it will have to download the model, which might take a while.
     model_kwargs={"device_map": "auto", "torch_dtype": dtype}
     processor_kwargs={"device_map": "cpu"}

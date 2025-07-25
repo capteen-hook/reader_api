@@ -37,6 +37,7 @@ pipeline {
         READER_API='https://shipshape.companionintelligence.org/reader_api'
         READER_API_KEY='your_key_here'
         BASE_URL=''
+        GPU='False'
     }
     stages {
         stage('Clone') {

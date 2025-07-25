@@ -6,7 +6,7 @@ services:
     image: ${FLASK_SERVER_IMAGE:-flask_server:latest}
     container_name: ${FLASK_SERVER_CONTAINER_NAME:-flask_server}
     extra_hosts:
-      - "host.docker.internal:host-gateway"  # For Ollama access
+      - "host.docker.internal:host-gateway"  # For docker engine
     depends_on:
       - tika
       - rabbitmq
@@ -28,6 +28,7 @@ services:
       TAVILY_API_KEY: ${TAVILY_API_KEY:-placeholder_key}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder_key}
       BASE_URL: ${BASE_URL:-}
+      GPU: ${GPU:-false}
     env_file:
       - .env
     volumes:
@@ -44,7 +45,7 @@ services:
     image: ${WORKER_IMAGE:-flask_server:latest}
     container_name: ${WORKER_CONTAINER_NAME:-flask_worker}
     extra_hosts:
-      - "host.docker.internal:host-gateway"  # For Ollama access
+      - "host.docker.internal:host-gateway" 
     depends_on:
       - flask_server
       - redis
@@ -64,6 +65,7 @@ services:
       TAVILY_API_KEY: ${TAVILY_API_KEY:-placeholder_key}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder_key}
       BASE_URL: ${BASE_URL:-}
+      GPU: ${GPU:-false}
     env_file:
       - .env
     networks:
@@ -78,7 +80,7 @@ services:
       dockerfile: Dockerfile
     container_name: ${REACT_SERVER_CONTAINER_NAME:-react_server}
     extra_hosts:
-      - "host.docker.internal:host-gateway"  # For Ollama access
+      - "host.docker.internal:host-gateway"
     ports:
       - "4000:4000"
     environment:
