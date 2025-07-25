@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     image: ${FLASK_SERVER_IMAGE:-flask_server:latest}
     container_name: ${FLASK_SERVER_CONTAINER_NAME:-flask_server}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # For Ollama access
     depends_on:
       - tika
       - rabbitmq
@@ -38,6 +40,8 @@ services:
   worker:
     image: ${WORKER_IMAGE:-flask_server:latest}
     container_name: ${WORKER_CONTAINER_NAME:-flask_worker}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # For Ollama access
     depends_on:
       - flask_server
       - redis
@@ -66,6 +70,8 @@ services:
     build: 
       context: ./react_server
       dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # For Ollama access
     ports:
       - "4000:4000"
     environment:
