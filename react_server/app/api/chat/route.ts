@@ -66,10 +66,6 @@ async function shipshapeTool() {
 
 async function createMCPTools(): Promise<ToolSet> {
 
-  console.log("Creating MCP tools with environment variables:");
-  console.log("OLLAMA_URL:", process.env.OLLAMA_URL);
-  console.log("MCP_API_KEY:", process.env.MCP_API_KEY);
-  console.log("TAVILY_API_KEY:", process.env.TAVILY_API_KEY);
 
   const weather = await weatherTool();
   const search = await searchTool();
@@ -112,7 +108,7 @@ export async function POST(req: Request) {
 
   console.log("Received messages:");
   for (const message of messages) {
-    console.log(`- ${message.role}: ${message.content}`);
+    console.log(`- ${message.role}: ${Object.keys(message.content)}`);
   }
 
   const result = streamText({
@@ -128,16 +124,7 @@ export async function POST(req: Request) {
     onError: console.log,
   });
   
-  // Starting to stream response: warningsPromise,usagePromise,finishReasonPromise,providerMetadataPromise,textPromise,reasoningPromise,reasoningDetailsPromise,sourcesPromise,filesPromise,toolCallsPromise,toolResultsPromise,requestPromise,responsePromise,stepsPromise,output,addStream,closeStream,baseStream
-  // console.log("Starting to stream response: " + Object.keys(result));
 
-  // console.log("Tool:", await result.toolResults);
-  // console.log("Tool calls:", await result.toolCalls);
-  // console.log("Text:", await result.text);
-
-  // print the serialized result
-
-  console.log("Serialized result:", result.toDataStreamResponse());
 
   return result.toDataStreamResponse();
 }

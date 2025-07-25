@@ -10,6 +10,10 @@ from bs4 import BeautifulSoup
 import json
 import jwt 
 import sys
+import time
+from datetime import datetime
+import threading
+import redis
 from functools import wraps
 from celery import Celery
 from flask_server.tools.web_search import search_tavily
@@ -19,9 +23,50 @@ from flask_server.tools.utils import validate_file, validate_form, verify_jwt, u
 from flask_server.ai.process import process_tika, chat #, process_plaintext, home_loop, process_file
 from flask_server.celery import celery
 from flask_server.tasks import process_file_task, process_home_task, process_plaintext_task, queue_full, process_vision_task
+
     
 load_dotenv()
 
+def clear_old_uploads_and_tasks(uploads, processing):
+    try:
+        cutoff_timestamp = time.time() - 2 * 3600  # 2 hours ago
+        redis_url = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+        redis_conn = redis.Redis.from_url(redis_url)
+
+        for folder in [uploads, processing]:
+            for filename in os.listdir(folder):
+                file_path = os.path.join(folder, filename)
+                if os.path.isfile(file_path) and os.path.getmtime(file_path) < cutoff_timestamp:
+                    os.remove(file_path)
+
+        for key in redis_conn.scan_iter("celery-task-meta-*"):
+            data = redis_conn.get(key)
+            if data:
+                try:
+                    task_meta = json.loads(data)
+                    date_done = task_meta.get("date_done")
+                    if date_done:
+                        task_time = datetime.strptime(date_done, "%Y-%m-%dT%H:%M:%S.%f")
+                        if task_time.timestamp() < cutoff_timestamp:
+                            redis_conn.delete(key)
+                except Exception as e:
+                    print(f"Skipping key {key} due to error: {e}")
+
+        print("Auto-clear complete.")
+
+    except Exception as e:
+        print(f"Auto-clear error: {e}", file=sys.stderr)
+
+def start_background_clear_thread(app):
+    def run_clear_loop():
+        while True:
+            print("[Background] Running periodic clear...")
+            clear_old_uploads_and_tasks(app)
+            time.sleep(2 * 3600)  # Sleep 2 hours
+
+    t = threading.Thread(target=run_clear_loop, daemon=True)
+    t.start()
+           
 def create_app(app):
     BASE_URL = os.getenv("BASE_URL", "") # serv at root by default
     
@@ -195,20 +240,11 @@ def create_app(app):
     @app.route(BASE_URL + '/clear', methods=['POST'])
     def clear_uploads():
         try:
-            # clear tasks
-            celery.control.purge()
-            
-            for filename in os.listdir(app.config['UPLOAD_FOLDER']):
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                os.remove(file_path)
-                
-            for filename in os.listdir(app.config['PROCESSING_FOLDER']):
-                file_path = os.path.join(app.config['PROCESSING_FOLDER'], filename)
-                os.remove(file_path)
-                
-            return jsonify({"message": "Uploads cleared"}), 200
+            clear_old_uploads_and_tasks(app.config['UPLOAD_FOLDER'], app.config['PROCESSING_FOLDER'])
+            return jsonify({"message": "Cleared files and tasks older than 2 hours"}), 200
+
         except Exception as e:
-            print(f"Error clearing uploads: {e}")
+            print(f"Error clearing uploads and tasks: {e}", file=sys.stderr)
             return jsonify({"error": str(e)}), 500
         
     @app.route(BASE_URL + '/', methods=['GET'])
@@ -244,5 +280,7 @@ if __name__ == '__main__':
     os.makedirs(app.config['PROCESSING_FOLDER'], exist_ok=True)
     
     create_app(app)
+    
+    start_background_clear_thread(app)
     
     app.run(host='0.0.0.0', port=PORT)

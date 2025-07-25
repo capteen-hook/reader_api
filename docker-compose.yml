@@ -88,7 +88,7 @@ services:
     environment:
       NODE_ENV: production
       TAVILY_API_KEY: ${TAVILY_API_KEY:-placeholder_key}
-      MCP_API_KEY: ${MC_API_KEY:-placeholder_key}
+      MCP_API_KEY: ${MCP_API_KEY:-placeholder_key}
       READER_API: ${READER_API:-http://flask_server:8000/reader_api}
       READER_API_KEY: ${READER_API_KEY:-placeholder_key}
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}

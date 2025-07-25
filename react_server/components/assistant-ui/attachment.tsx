@@ -183,7 +183,7 @@ export const UserMessageAttachments: FC = () => {
 
 export const ComposerAttachments: FC = () => {
   return (
-    <div className="flex w-full flex-row gap-3 overflow-x-auto">
+    <div>
       <ComposerPrimitive.Attachments
         components={{ Attachment: AttachmentUI }}
       />
@@ -198,7 +198,6 @@ export const ComposerAddFile: FC = () => {
       asChild
     >
       <TooltipIconButton
-        className="my-2.5 size-8 p-2 transition-opacity ease-in"
         tooltip="Add Attachment"
         variant="ghost"
       >
@@ -215,7 +214,6 @@ export const ComposerAddReport: FC = () => {
       asChild
     >
       <TooltipIconButton
-        className="my-2.5 size-8 p-2 transition-opacity ease-in"
         tooltip="Add Report Attachment"
         variant="ghost"
       >
@@ -232,7 +230,6 @@ export const ComposerAddAppliance: FC = () => {
       asChild
     >
       <TooltipIconButton
-        className="my-2.5 size-8 p-2 transition-opacity ease-in"
         tooltip="Add Appliance Attachment"
         variant="ghost"
       >

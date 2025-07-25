@@ -131,7 +131,7 @@ const Composer: FC = () => {
         className="placeholder:text-muted-foreground max-h-40 flex-grow resize-none border-none bg-transparent px-2 py-4 text-sm outline-none focus:ring-0 disabled:cursor-not-allowed"
       />
       {/* flex row with all the buttons for attachments and actions */}
-      <div className="flex items-center gap-50 w-full max-w-[var(--thread-max-width)] px-4.5 pt-3">
+      <div style={{ display: "flex", justifyContent: "left" }} className="flex flex-wrap items-center gap-2">
         <ComposerAttachments />
         <ComposerAddFile />
         <ComposerAddReport />
@@ -150,7 +150,6 @@ const ComposerAction: FC = () => {
           <TooltipIconButton
             tooltip="Send"
             variant="default"
-            className="my-2.5 size-12  p-2 transition-opacity ease-in w-18 h-8"
           >
             <SendHorizontalIcon />
           </TooltipIconButton>
@@ -161,7 +160,6 @@ const ComposerAction: FC = () => {
           <TooltipIconButton
             tooltip="Cancel"
             variant="default"
-            className="my-2.5 size-12 p-2 transition-opacity ease-in w-18 h-8"
           >
             <CircleStopIcon />
           </TooltipIconButton>

@@ -1,16 +1,24 @@
 "use client";
 import React from "react";
 
-function StatusIndicator(status: boolean, name: string) {
+function StatusIndicator({ status, name }: { status: boolean; name: string }) {
     return (
-        <div style={{ color: status ? "green" : "red" }}>
-            {name} is {status ? "Online" : "Offline"}
-        </div>
+        <span
+            style={{
+                display: "inline-block",
+                margin: "0 5px",
+                width: "10px",
+                height: "10px",
+                backgroundColor: status ? "green" : "red",
+                borderRadius: "50%",
+                cursor: "pointer",
+            }}
+            title={`${name} is ${status ? "Online" : "Offline"}`}
+        ></span>
     );
 }
 
 export default function StatusMonitor() {
-
     const [ollamaStatus, setOllamaStatus] = React.useState<boolean>(false);
     const [readerStatus, setReaderStatus] = React.useState<boolean>(false);
     const [mcpStatus, setMcpStatus] = React.useState<boolean>(false);
@@ -20,7 +28,7 @@ export default function StatusMonitor() {
             try {
                 const res = await fetch('/api/status', {
                     method: 'GET',
-                    cache: 'no-store' // Ensure fresh data
+                    cache: 'no-store', // Ensure fresh data
                 });
 
                 if (!res.ok) {
@@ -39,16 +47,11 @@ export default function StatusMonitor() {
         fetchStatus();
     }, []);
 
-    console.log("Ollama Status:", ollamaStatus);
-    console.log("Reader API Status:", readerStatus);
-    console.log("MCP Server Status:", mcpStatus);
-
     return (
-        <div className="status-monitor">
-            <h2>Status Monitor</h2>
-            {StatusIndicator(ollamaStatus, "Ollama")}
-            {StatusIndicator(readerStatus, "Reader API")}
-            {StatusIndicator(mcpStatus, "MCP Server")}
+        <div className="m-2" style={{ display: "flex", justifyContent: "right"}}>
+            <StatusIndicator status={ollamaStatus} name="Ollama" />
+            <StatusIndicator status={readerStatus} name="Reader API" />
+            <StatusIndicator status={mcpStatus} name="MCP Server" />
         </div>
     );
 }

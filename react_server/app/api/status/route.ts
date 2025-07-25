@@ -27,22 +27,26 @@ async function getReaderStatus() {
     }
 }
 
-async function getMCPStatus() {
-    // curl -N https://dev.dashboard.shipshape.ai/sse   -H "X-API-KEY: " -v
+async function getMCPStatus(): Promise<boolean> {
     try {
-        const key = process.env.MCP_API_KEY
+        const key = process.env.MCP_API_KEY;
 
         const res = await fetch("https://dev.dashboard.shipshape.ai/sse", {
             method: "GET",
             headers: {
-                "X-API-KEY": key || ""
-            }
+                "X-API-KEY": key || "",
+            },
         });
+
         console.log("MCP Server response status:", res.status);
-        if (!res.ok) {
-            return false;
+
+        const contentType = res.headers.get("content-type") || "";
+
+        if (res.ok && contentType.includes("text/event-stream")) {
+            return true;
         }
-        return res.ok
+
+        return false;
     } catch (error) {
         console.error("Error fetching MCP Server status:", error);
         return false;
