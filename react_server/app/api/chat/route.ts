@@ -34,6 +34,9 @@ async function searchTool() {
 
   const transport = new Experimental_StdioMCPTransport({
     command: mcpServerPath,
+    env: {
+      TAVILY_API_KEY: process.env.TAVILY_API_KEY || "dummy_key",
+    },
   });
 
   const mcpClient = await createMCPClient({ transport });
