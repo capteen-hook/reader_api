@@ -20,9 +20,12 @@ def replace_containerized_path(file_path):
 
 def load_model():
     print("CUDA available:", torch.cuda.is_available(), file=sys.stderr)
-    print("Supports float16:", torch.cuda.get_device_capability()[0] >= 7)
-    print("CUDA device:", torch.cuda.current_device(), file=sys.stderr)
-    print("CUDA name:", torch.cuda.get_device_name(torch.cuda.current_device()), file=sys.stderr)
+    try:
+        print("Supports float16:", torch.cuda.get_device_capability()[0] >= 7)
+        print("CUDA device:", torch.cuda.current_device(), file=sys.stderr)
+        print("CUDA name:", torch.cuda.get_device_name(torch.cuda.current_device()), file=sys.stderr)
+    except Exception as e:
+        print(f"Error checking CUDA capabilities: {e}", file=sys.stderr)
 
     if os.getenv("LIGHTWEIGHT_MODEL", "True").lower() in ["true", "1", "yes"]:
         # lighter model:
