@@ -27,6 +27,8 @@ services:
       PORT: ${PORT:-8000}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-placeholder_key}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder_key}
+    env_file:
+      - .env
     volumes:
       - ${WORK_DIR:-./workdir}:/app/workdir
       - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
@@ -60,6 +62,8 @@ services:
       PORT: ${PORT:-8000}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-placeholder_key}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder_key}
+    env_file:
+      - .env
     networks:
       - tika_network
     volumes:
@@ -83,6 +87,8 @@ services:
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
       FLASK_SERVER_URL: ${FLASK_SERVER_URL:-http://flask_server:8000}
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434/}
+    env_file:
+      - .env
     networks:
       - tika_network
     depends_on:
@@ -93,6 +99,8 @@ services:
     container_name: ${TIKA_CONTAINER_NAME:-tika}
     ports:
       - "${TIKA_PORT:-9998}:9998"
+    env_file:
+      - .env
     restart: unless-stopped
     volumes:
       - ${TIKA_CONFIG_FILE:-./tika-config.xml}:/tika-config.xml
@@ -108,6 +116,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-user}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-password}
+    env_file:
+      - .env
     restart: unless-stopped
     networks:
       - tika_network
@@ -115,11 +125,14 @@ services:
   redis:
     image: ${REDIS_IMAGE:-redis:latest}
     container_name: ${REDIS_CONTAINER_NAME:-redis}
+    env_file:
+      - .env
     ports:
       - "${REDIS_PORT:-6379}:6379"
     restart: unless-stopped
     networks:
       - tika_network
+
 networks:
   tika_network:
     driver: bridge
