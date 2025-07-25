@@ -2,6 +2,7 @@
 async function getOllamaStatus() {
     try {
         const res = await fetch(process.env.OLLAMA_URL || "http://localhost:11434/")
+        console.log("Ollama response status:", res.status);
         if (!res.ok) {
             return false;
         }
@@ -14,7 +15,8 @@ async function getOllamaStatus() {
 
 async function getReaderStatus() {
     try {
-        const res = await fetch(process.env.READER_API || "http://localhost:8080/")
+        const res = await fetch(process.env.READER_API || "http://localhost:8000/")
+        console.log("Reader API response status:", res.status);
         if (!res.ok) {
             return false;
         }
@@ -36,7 +38,7 @@ async function getMCPStatus() {
                 "X-API-KEY": key || ""
             }
         });
-
+        console.log("MCP Server response status:", res.status);
         if (!res.ok) {
             return false;
         }

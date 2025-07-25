@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 
-
 function StatusIndicator(status: boolean, name: string) {
     return (
         <div style={{ color: status ? "green" : "red" }}>
