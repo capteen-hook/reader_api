@@ -27,13 +27,16 @@ def create_app(app):
     
     @app.before_request
     def verify_api_key():
+        print("BASE_URL:", BASE_URL, file=sys.stderr)
         # root path and docs path are public
         if request.path == BASE_URL + '/' and request.method == 'GET' and len(request.path) == 1:
             return
         elif request.path == BASE_URL + '/docs' and request.method == 'GET' and len(request.path) == 5:
+            print("Serving OpenAPI documentation at:", request.path, file=sys.stderr)
             return
         token = request.headers.get("Authorization")
         if not token:
+            print("Missing Authorization header for route:", request.path, file=sys.stderr)
             return jsonify({"error": "Missing Authorization header"}), 401
         
         # Remove "Bearer " prefix if present

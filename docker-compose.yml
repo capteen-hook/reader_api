@@ -27,6 +27,7 @@ services:
       PORT: ${PORT:-8000}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-placeholder_key}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder_key}
+      BASE_URL: ${BASE_URL:-}
     env_file:
       - .env
     volumes:
@@ -62,6 +63,7 @@ services:
       PORT: ${PORT:-8000}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-placeholder_key}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder_key}
+      BASE_URL: ${BASE_URL:-}
     env_file:
       - .env
     networks:
@@ -87,6 +89,7 @@ services:
       MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
       FLASK_SERVER_URL: ${FLASK_SERVER_URL:-http://flask_server:8000}
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434/}
+      BASE_URL: ${BASE_URL:-}
     env_file:
       - .env
     networks:
