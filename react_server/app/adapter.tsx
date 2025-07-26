@@ -29,7 +29,7 @@ class FileAttachmentAdapter implements AttachmentAdapter {
     }
 
     async send(attachment: SpecialPendingAttachment): Promise<SpecialCompleteAttachment> {
-        const { attachments, addAttachment, updateAttachment, clearAttachments, removeAttachment } = this.attachmentContext;
+        const { addAttachment, updateAttachment } = this.attachmentContext;
 
         // Update context to show progress
         const attachmentMoniter: Attachment = {
@@ -103,7 +103,7 @@ class FileAttachmentAdapter implements AttachmentAdapter {
 
     async remove(attachment: SpecialPendingAttachment): Promise<void> {
         // Cleanup if needed
-        const { attachments, addAttachment, updateAttachment, clearAttachments, removeAttachment } = this.attachmentContext;
+        const { removeAttachment } = this.attachmentContext;
 
         removeAttachment(attachment.id);
         

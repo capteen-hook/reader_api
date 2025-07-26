@@ -56,7 +56,7 @@ export const useAttachmentContext = () => {
 };
 
 export default function AttachmentMonitor() {
-  const { attachments, addAttachment, updateAttachment, clearAttachments } = useAttachmentContext();
+  const { attachments } = useAttachmentContext();
 
   return (
     <ul className="m-2">
