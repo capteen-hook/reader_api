@@ -45,12 +45,6 @@ def validate_form(form_data):
         
         # Validate form data against the schema
         schema = JsonSchema(form_data)
-        
-        # print the type of the schema
-        # print the type of the schema's schema attribute
-        
-        # print("Validating form data against schema:", schema)
-        # print("Schema content:", json.loads(schema.schema))
         # If validation passes, return the schema
         return schema
     except Exception as e:

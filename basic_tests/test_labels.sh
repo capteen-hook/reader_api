@@ -46,6 +46,10 @@ task_id9=$(post_multipart "${auth_token}" "${url}/process/appliance" "${file9}" 
 task_id10=$(post_multipart "${auth_token}" "${url}/process/appliance" "${file10}" "${schema}") || exit 1
 task_id11=$(post_multipart "${auth_token}" "${url}/process/appliance" "${file11}" "${schema}") || exit 1
 
+# wait 20 seconds for tasks to complete
+echo "Waiting for tasks to complete..."
+sleep 20
+
 get "${auth_token}" "${url}/tasks/${task_id1}"
 get "${auth_token}" "${url}/tasks/${task_id2}"
 get "${auth_token}" "${url}/tasks/${task_id3}"

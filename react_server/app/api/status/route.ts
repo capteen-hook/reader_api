@@ -1,6 +1,7 @@
 
 async function getOllamaStatus() {
     try {
+        console.log("Ollama URL:", process.env.OLLAMA_URL || "not provided");
         const res = await fetch(process.env.OLLAMA_URL || "http://localhost:11434/")
         console.log("Ollama response status:", res.status);
         if (!res.ok) {
@@ -15,6 +16,7 @@ async function getOllamaStatus() {
 
 async function getReaderStatus() {
     try {
+        console.log("Reader API URL:", process.env.READER_API || "not provided");
         const res = await fetch(process.env.READER_API || "http://localhost:8000/")
         console.log("Reader API response status:", res.status);
         if (!res.ok) {

@@ -13,14 +13,11 @@ def search_duckduckgo(query):
     }
 
     response = requests.get(url, headers=headers)
-    print(f"HTTP Status Code: {response.status_code}")
-    print(f"Response URL: {response.text}")
 
     soup = BeautifulSoup(response.text, "html.parser")
 
     # Find all <a> tags with the class 'result__snippet'
     results = soup.find_all("a", class_="result__snippet")
-    print(f"Found {len(results)} results for query: {query}")
 
     # Print the text content of each matching tag
     text_results = "".join('Search Result:\n' + result.get_text(strip=True) + '\n\n' for result in results)

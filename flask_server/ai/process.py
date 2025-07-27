@@ -46,7 +46,6 @@ def get_model():
     return _model, _client
 
 def process_file(file_path, schema=example_schema):
-    print(f"Processing file: {file_path} with schema: {schema}", file=sys.stderr)
     #file_path = replace_containerized_path(file_path)
     
     _model, _client = get_model()

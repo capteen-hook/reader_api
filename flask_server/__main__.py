@@ -72,12 +72,10 @@ def create_app(app):
     
     @app.before_request
     def verify_api_key():
-        print("BASE_URL:", BASE_URL, file=sys.stderr)
         # root path and docs path are public
         if request.path == BASE_URL + '/' and request.method == 'GET' and len(request.path) == 1:
             return
         elif request.path == BASE_URL + '/docs' and request.method == 'GET' and len(request.path) == 5:
-            print("Serving OpenAPI documentation at:", request.path, file=sys.stderr)
             return
         token = request.headers.get("Authorization")
         if not token:
@@ -98,7 +96,6 @@ def create_app(app):
             if queue_full():
                 print("Task queue is full, cannot enqueue file processing task")
                 return jsonify({"error": "Task queue is full"}), 503
-            print(f"Incoming request: {request.files}, {request.form}, {request.headers}", file=sys.stderr)
 
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', example_schema)
@@ -136,17 +133,13 @@ def create_app(app):
             
             if queue_full():
                 return jsonify({"error": "Task queue is full"}), 503
-            print(f"Incoming request: {request.files}, {request.form}, {request.headers}", file=sys.stderr)
-
             
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', default_appliance_form)
             # WIP!
             if os.getenv("VISION_MODE", "false").lower() == "true":
-                print("Vision mode is enabled, processing with vision task", file=sys.stderr)
                 id = process_vision_task.apply_async(args=[file_path, schema])
             else:
-                print("Vision mode is disabled: " + os.getenv("VISION_MODE", "no env var found"), file=sys.stderr)
                 id = process_file_task.apply_async(args=[file_path, schema])
                 
             return jsonify({"task_id": id.id}), 200
@@ -159,9 +152,6 @@ def create_app(app):
     def tika_process():                                       # consider changing this to a task
         # get the OCR result from Tika
         try:
-            print("Processing file with Tika...", file=sys.stderr)
-            print(f"Incoming request: {request.files}, {request.form}, {request.headers}", file=sys.stderr)
-
             file_path = upload_file(request.files.get('file'))
             text = process_tika(file_path)
             print("Tika processing complete", file=sys.stderr)
@@ -180,8 +170,6 @@ def create_app(app):
     @app.route(BASE_URL + '/process/text', methods=['POST'])
     def plaintext_process():
         try:
-            print("Processing plaintext file...", file=sys.stderr)
-
            
             text = process_plaintext_task(request.json.get('message', ''), request.json.get('form', example_schema))
             return jsonify(text), 200
@@ -194,9 +182,7 @@ def create_app(app):
         
     @app.route(BASE_URL + '/chat', methods=['POST'])
     def chat_with_model():
-        try:
-            print("Processing chat request...", file=sys.stderr)
-            
+        try:            
             text = chat(request.json.get('message', ''))
             return jsonify({"response": text}), 200
         except ValueError as ve:
@@ -226,7 +212,6 @@ def create_app(app):
             if task.state == 'PENDING':
                 response = {'state': task.state, 'status': 'Pending...'}
             elif task.state == 'SUCCESS':
-                print(f"Task {task_id} completed successfully: {task}", file=sys.stderr)
                 response = {'state': task.state, 'result': task.result}
             elif task.state == 'FAILURE':
                 response = {'state': task.state, 'error': str(task.info)}
@@ -267,7 +252,6 @@ def create_app(app):
             
 
 if __name__ == '__main__':
-    print("Starting Flask server...", file=sys.stderr)
     PORT = int(os.getenv("PORT", 8000))
 
     app = Flask(__name__)

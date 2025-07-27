@@ -198,21 +198,18 @@ def process_vision(file_path, schema):
         transforms.ConvertImageDtype(_dtype),
     ])
     
-    print(f"Transform composed", file=sys.stderr)
-    
     try:
         image = Image.open(file_path)
         
-        print(f"Starting generation for image {file_path}", file=sys.stderr)
-        
         result = image_summary_generator({"text": prompt, "images": image})
-        
-        print(f"Image processed successfully", file=sys.stderr)
         
         del image
         torch.cuda.empty_cache()
         gc.collect()
         print(f"Processed image {file_path}: {result}", file=sys.stderr)
+        print(f"Result: {result}", file=sys.stderr)
+        print(f"Result type: {type(result)}", file=sys.stderr)
+        print(f"Result keys: {list(result.keys())}", file=sys.stderr)
         return result
     except Exception as e:
         print(f"Error processing image {file_path}: {e}")
