@@ -55,7 +55,7 @@ services:
       - tika
       - rabbitmq
     restart: always
-    command: celery -A flask_server.celery:celery worker --loglevel=info
+    command: celery -A flask_server.celery:celery worker --loglevel=debug --concurrency=1
     environment:
       TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://user:password@rabbitmq:5672//}
