@@ -185,7 +185,7 @@ def process_vision(file_path, schema):
             ],
         }
     ]
-    print(f"Processing image {file_path} with schema {schema}", file=sys.stderr)
+    print(f"Processing image {file_path}", file=sys.stderr)
     
     image_summary_generator = Generator(_model_i, schema)
     
@@ -202,14 +202,13 @@ def process_vision(file_path, schema):
         image = Image.open(file_path)
         
         result = image_summary_generator({"text": prompt, "images": image})
-        
+       
         del image
         torch.cuda.empty_cache()
         gc.collect()
         print(f"Processed image {file_path}: {result}", file=sys.stderr)
         print(f"Result: {result}", file=sys.stderr)
         print(f"Result type: {type(result)}", file=sys.stderr)
-        print(f"Result keys: {list(result.keys())}", file=sys.stderr)
         return result
     except Exception as e:
         print(f"Error processing image {file_path}: {e}")
