@@ -14,7 +14,7 @@ import { Thread } from "@/components/assistant-ui/thread";
 // import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 import { FileAttachmentAdapter } from "./adapter";
-import AttachmentMonitor from "@/components/attachment-monitor";
+// import AttachmentMonitor from "@/components/attachment-monitor";
 
 export const runtime = "nodejs";
 
@@ -53,7 +53,7 @@ export const Assistant = () => {
         </SidebarInset>
       </SidebarProvider> */}
       <Thread />
-      <AttachmentMonitor />
+      {/* <AttachmentMonitor /> */}
     </AssistantRuntimeProvider>
   );
 };
