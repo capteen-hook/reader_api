@@ -27,7 +27,7 @@ def load_model():
     except Exception as e:
         print(f"Error checking CUDA capabilities: {e}", file=sys.stderr)
 
-    if os.getenv("LIGHTWEIGHT_MODEL", "True").lower() in ["true", "1", "yes"]:
+    if os.getenv("LIGHTWEIGHT_MODE", "True").lower() in ["true", "1", "yes"]:
         # lighter model:
         from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
         model_name = "Qwen/Qwen2-VL-7B-Instruct"
@@ -35,6 +35,7 @@ def load_model():
         processor_class = AutoProcessor
     else:
         # heavyweight model:
+        print("Using heavyweight model " + os.getenv("LIGHTWEIGHT_MODE", "False"), file=sys.stderr)
         from transformers import LlavaForConditionalGeneration, LlavaProcessor
         model_name="mistral-community/pixtral-12b"
         model_class=LlavaForConditionalGeneration
