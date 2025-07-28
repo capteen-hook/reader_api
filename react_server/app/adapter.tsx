@@ -45,7 +45,7 @@ class FileAttachmentAdapter implements AttachmentAdapter {
         formData.append("name", attachment.name);
     
         let res: Response;
-            
+        console.log(`Sending attachment: ${attachment.id}, processType: ${attachment.file.processType}`);
         if (attachment.file.processType === "file") {
             res = await fetch("/api/file", {
                 method: "POST",

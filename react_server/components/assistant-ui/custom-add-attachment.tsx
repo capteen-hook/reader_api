@@ -14,13 +14,18 @@ import { makeSpecial } from "@/components/special_file"
 
 const useComposerAddAttachment = ({
   multiple = true,
-  processType = "file",
+  processType,
 }: {
   /** allow selecting multiple files */
   multiple?: boolean | undefined;
   /** how to handle the attachment */
   processType?: "file" | "report" | "appliance";
 } = {}) => {
+  if (!processType) {
+    console.warn('processType is not set, defaulting to "file"');
+    processType = "file";
+  }
+
   const disabled = useComposer((c) => !c.isEditing);
 
   const composerRuntime = useComposerRuntime();
@@ -118,5 +123,5 @@ export const createActionButton = <TProps,>(
 export const CustomAddAttachment = createActionButton(
   "ComposerPrimitive.AddAttachment",
   useComposerAddAttachment,
-  ["multiple"],
+  ["multiple", "processType"] // Forward these props to the hook
 );

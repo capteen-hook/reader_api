@@ -7,6 +7,7 @@ import os
 import gc
 from flask_server.ai.prompts import fill_form
 import sys
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -152,7 +153,12 @@ def process_vision_multiple(file_path, schema):
         try:
             image = Image.open(imagename)
             
+            print(f"Using generator prompt: {prompt}", file=sys.stderr)
+            print(f"Using generator schema: {schema}", file=sys.stderr)
+            
             result = page_summary_generator({"text": prompt, "images": image})
+            
+            print(f"Result from generator: {result}", file=sys.stderr)
             
             results.append(result)
             
@@ -202,7 +208,12 @@ def process_vision(file_path, schema):
     try:
         image = Image.open(file_path)
         
+        print(f"Using generator prompt: {prompt}", file=sys.stderr)
+        print(f"Using generator schema: {schema}", file=sys.stderr)
+        
         result = image_summary_generator({"text": prompt, "images": image})
+
+        print(f"Result from generator: {result}", file=sys.stderr)
        
         del image
         torch.cuda.empty_cache()
@@ -210,7 +221,16 @@ def process_vision(file_path, schema):
         print(f"Processed image {file_path}: {result}", file=sys.stderr)
         print(f"Result: {result}", file=sys.stderr)
         print(f"Result type: {type(result)}", file=sys.stderr)
-        return result
+    
+        try:
+            res = json.loads(result)
+            return res
+        except json.JSONDecodeError as e:
+            return {
+                "error": "Failed to parse JSON from the generator output.",
+                "details": str(e),
+                "result": result
+            }
     except Exception as e:
         print(f"Error processing image {file_path}: {e}")
         raise Exception(f"Error processing image {file_path}: {e}")

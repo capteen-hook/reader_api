@@ -56,17 +56,7 @@ def process_file(file_path, schema=example_schema):
         if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp']:
             # For image files, we can use vision processing
             # but for now- just try and get text from it with Tika
-            result = process_vision(file_path, schema)
-            
-            try:
-                # Attempt to parse the result as JSON
-                return json.loads(result)
-            except json.JSONDecodeError as e:
-                # Log the error and the problematic result
-                print(f"Error decoding JSON: {e}")
-                print(f"Result string: {result}")
-                raise ValueError("Failed to parse JSON from the generator output.")
-            
+            return process_vision(file_path, schema)
         else:
             # For PDF files, use Tika to extract text
             text = process_tika(file_path)
@@ -78,10 +68,14 @@ def process_file(file_path, schema=example_schema):
                 raise ValueError("Invalid form schema provided")
             
             prompt = fill_form(text, schema)
+            
+            print(f"Using generator prompt: {prompt}")
+            print(f"Using generator schema: {schema}")
         
             generator = Generator(_model, schema)
             # Process the text with the prompt
             result = generator(prompt)
+            print(f"Result from generator: {result}")
             try:
                 print(f"Result from generator: {result}")
                 print(f"Schema used: {schema}")
@@ -187,8 +181,11 @@ def process_plaintext(text, schema, prompt=None):
     if prompt is None:
         prompt = fill_form(text, schema)
     generator = Generator(_model, schema)
+    print(f"Using generator prompt: {prompt}")
+    print(f"Using generator schema: {schema}")
     # Process the text with the prompt
     result = generator(prompt)    
+    print(f"Result from generator: {result}")
     try:
         # Attempt to parse the result as JSON
         return json.loads(result)
