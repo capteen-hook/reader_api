@@ -59,10 +59,11 @@ def load_model():
     # it will have to download the model, which might take a while.
     model_kwargs={"device_map": "auto", "torch_dtype": dtype}
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
-    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
+    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=False)
 
     config = AutoConfig.from_pretrained(model_name, cache_dir='/app/workdir/cache')
     context_limit = getattr(config, "max_position_embeddings", None)
+    # 32768
     print(f"Model context window (max tokens): {context_limit}", file=sys.stderr)
 
     print(f"Model {model_name} loaded successfully", file=sys.stderr)
@@ -125,18 +126,11 @@ def process_vision_multiple(file_path, schema):
         imagenames = [file_path]
     
     messages = [
+        { "role": "system", "content": "You are a information extraction assistant, fill out this form as completely as possible: " + schema },
         {
             "role": "user",
             "content": [
-                # The text you're passing to the model --
-                # this is where you do your standard prompting.
-                {"type": "text", "text": f"""
-                    {"Use the image", schema)}
-                    """
-                },
-
-                # This a placeholder, the actual image is passed in when
-                # we call the generator function down below.
+                {"type": "text", "text": "Here is an image:"},
                 {"type": "image", "image": ""},
             ],
         }
@@ -146,7 +140,7 @@ def process_vision_multiple(file_path, schema):
     
     # Convert the messages to the final prompt
     prompt = _tf_processor.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
+        messages, tokenize=True, add_generation_prompt=True
     )
     
     transform = transforms.Compose([
@@ -201,8 +195,11 @@ def process_vision(file_path, schema):
     image_summary_generator = Generator(_model_i, schema)
     
     prompt = _tf_processor.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
+        messages, tokenize=True, add_generation_prompt=True
     )
+    
+    # context length
+    print(f"Prompt token length: {len(_tf_processor.tokenizer(prompt)['input_ids'])}", file=sys.stderr)
     
     transform = transforms.Compose([
         transforms.ToTensor(),
