@@ -5,7 +5,6 @@ from pdf2image import convert_from_path
 from outlines import Generator, from_transformers
 import os
 import gc
-from flask_server.ai.prompts import fill_form
 import sys
 import json
 from dotenv import load_dotenv
@@ -132,7 +131,7 @@ def process_vision_multiple(file_path, schema):
                 # The text you're passing to the model --
                 # this is where you do your standard prompting.
                 {"type": "text", "text": f"""
-                    {fill_form("Use the image", schema)}
+                    {"Use the image", schema)}
                     """
                 },
 
@@ -188,13 +187,11 @@ def process_vision(file_path, schema):
     _model_i, _tf_processor, _device, _dtype = get_model()
     
     messages = [
+        { "role": "system", "content": "You are a information extraction assistant, fill out this form as completely as possible: " + schema },
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": f"""
-                    {fill_form("Use the image", schema)}
-                    """
-                },
+                {"type": "text", "text": "Here is an image:"},
                 {"type": "image", "image": ""},
             ],
         }
