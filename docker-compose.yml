@@ -55,7 +55,7 @@ services:
       - tika
       - rabbitmq
     restart: always
-    command: celery -A flask_server.celery:celery worker --loglevel=debug --concurrency=1
+    command: celery -A flask_server.celery:celery worker --loglevel=info --concurrency=1
     environment:
       TIKA_URL: ${TIKA_URL:-http://tika:9998/tika}
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://user:password@rabbitmq:5672//}
@@ -77,6 +77,13 @@ services:
     volumes:
       - ${WORK_DIR:-./workdir}:/app/workdir
       - ${TRANSFORMERS_CACHE:-./transformers_cache}:/app/transformers_cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   react_server:
     build: 

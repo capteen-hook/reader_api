@@ -19,7 +19,7 @@ MAX_TASKS = int(os.getenv('MAX_TASKS', 30))
 
 @celery.task
 def process_file_task(file_path, schema=example_schema):
-    print(f"Processing file task: {file_path} with schema: {schema}", file=sys.stderr)
+    print(f"Processing file task: {file_path}", file=sys.stderr)
     processed_content = process_file(file_path, schema)
     return processed_content
     
@@ -36,7 +36,7 @@ def process_plaintext_task(file_path, schema=example_schema):
 
 @celery.task
 def process_vision_task(file_path, schema=default_appliance_form):
-    print(f"Processing vision task for file: {file_path} with schema: {schema}", file=sys.stderr)
+    print(f"Processing vision task for file: {file_path}", file=sys.stderr)
     content = process_vision(file_path, schema)
     return content
 
