@@ -45,17 +45,18 @@ def load_model():
     print(f"Using model: {model_name}", file=sys.stderr)
     if os.getenv('GPU', 'True').lower() in ['true', '1', 'yes']:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        processor_kwargs = {"device_map": "gpu"} if torch.cuda.is_available() else {"device_map": "cpu"}
         if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 7:
             dtype = torch.float16
         else:
             dtype = torch.bfloat16
-        print(f"Tried GPU: {torch.cuda.is_available()}, using device: {device}, dtype: {dtype}", file=sys.stderr)
+        print(f"Tried GPU: {torch.cuda.is_available()}, using device: {device}, dtype: {dtype}, processor_kwargs: {processor_kwargs}", file=sys.stderr)
     else:
         device = torch.device("cpu")
         dtype = torch.float32
+        processor_kwargs={"device_map": "cpu"}
     # it will have to download the model, which might take a while.
     model_kwargs={"device_map": "auto", "torch_dtype": dtype}
-    processor_kwargs={"device_map": "cpu"}
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
     tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
