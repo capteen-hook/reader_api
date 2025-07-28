@@ -102,29 +102,45 @@ async function getMcpTools() {
 }
 
 export async function POST(req: Request) {
-  const { messages, system, tools } = await req.json();
+  const res = await req.json();
+  console.log("Received req:", res);
+  const { messages, system, tools } = res
+  console.log("Received request with messages:", messages);
+  console.log("System prompt:", system);
+  console.log("Tools:", tools);
+  if (!tools) {
+    const result = streamText({
+      model: ollama(process.env.MODEL_NAME || "qwen3:8b"),
+      messages,
+      // forward system prompt from the frontend
+      system,
+      toolCallStreaming: false,
+      onError: console.log,
+    });
+    
+    return result.toDataStreamResponse();
 
-  const this_mcpTools = await getMcpTools();
+  } else {
+    const this_mcpTools = await getMcpTools();
 
-  console.log("Received messages:");
-  for (const message of messages) {
-    console.log(`- ${message.role}: ${Object.keys(message.content)}`);
+    // console.log("Received messages:");
+    // for (const message of messages) {
+    //   console.log(`- ${message.role}: ${Object.keys(message.content)}`);
+    // }
+
+    const result = streamText({
+      model: ollama(process.env.MODEL_NAME || "qwen3:8b"),
+      messages,
+      // forward system prompt and tools from the frontend
+      toolCallStreaming: true,
+      system,
+      tools: {
+        ...frontendTools(tools),
+        ...this_mcpTools,
+      },
+      onError: console.log,
+    });
+
+    return result.toDataStreamResponse();
   }
-
-  const result = streamText({
-    model: ollama(process.env.MODEL_NAME || "qwen3:8b"),
-    messages,
-    // forward system prompt and tools from the frontend
-    toolCallStreaming: true,
-    system,
-    tools: {
-      ...frontendTools(tools),
-      ...this_mcpTools,
-    },
-    onError: console.log,
-  });
-  
-
-
-  return result.toDataStreamResponse();
 }

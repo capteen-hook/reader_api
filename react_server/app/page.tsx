@@ -1,5 +1,12 @@
+'use client';
 import { Assistant } from "./assistant";
 
+import { AttachmentProvider } from "@/components/attachment-monitor";
+
 export default function Home() {
-  return <Assistant />;
+  return (
+    <AttachmentProvider>
+      <Assistant />
+    </AttachmentProvider>
+  );
 }

@@ -100,7 +100,7 @@ def create_app(app):
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', example_schema)
             
-            print(f"Processing file: {file_path} with schema: {schema}", file=sys.stderr)
+            print(f"Creating task: {file_path}", file=sys.stderr)
             
             id = process_file_task.apply_async(args=[file_path, schema])
             return jsonify({"task_id": id.id}), 200

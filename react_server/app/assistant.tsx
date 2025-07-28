@@ -13,17 +13,21 @@ import { Thread } from "@/components/assistant-ui/thread";
 // import { Separator } from "@/components/ui/separator";
 // import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
+import { useAttachmentContext } from "@/components/attachment-monitor";
 import { FileAttachmentAdapter } from "./adapter";
-// import AttachmentMonitor from "@/components/attachment-monitor";
+import AttachmentMonitor from "@/components/attachment-monitor";
 
 export const runtime = "nodejs";
 
 export const Assistant = () => {
+
+  const attachmentContext = useAttachmentContext();
   const runtime = useChatRuntime({
     api: "/api/chat",
     adapters: {
-      attachments: new FileAttachmentAdapter()
+      attachments: new FileAttachmentAdapter(attachmentContext),
     },
+    unstable_humanToolNames: [],
   });
 
   return (
@@ -53,7 +57,7 @@ export const Assistant = () => {
         </SidebarInset>
       </SidebarProvider> */}
       <Thread />
-      {/* <AttachmentMonitor /> */}
+      <AttachmentMonitor />
     </AssistantRuntimeProvider>
   );
 };

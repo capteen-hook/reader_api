@@ -3,8 +3,13 @@ import {
     AttachmentAdapter
 } from "@assistant-ui/react";
 
+import { useAttachmentContext } from "@/components/attachment-monitor";
+import type { Attachment } from "@/components/attachment-monitor";
+
 class FileAttachmentAdapter implements AttachmentAdapter {
     accept = "*/*"    
+
+    constructor(private attachmentContext: ReturnType<typeof useAttachmentContext>) {}
 
     async add({ file }: { file: SpecialFile }): Promise<SpecialPendingAttachment> {
         // Validate file size
@@ -12,8 +17,6 @@ class FileAttachmentAdapter implements AttachmentAdapter {
         if (file.size > maxSize) {
             throw new Error("File size exceeds 10MB limit");
         }
-
-        console.log(`Adding attachment: ${file.name}, size: ${file.size} bytes`);
         
         return {
             id: crypto.randomUUID(),
@@ -26,6 +29,16 @@ class FileAttachmentAdapter implements AttachmentAdapter {
     }
 
     async send(attachment: SpecialPendingAttachment): Promise<SpecialCompleteAttachment> {
+        const { attachments, addAttachment, updateAttachment, clearAttachments, removeAttachment } = this.attachmentContext;
+
+        // Update context to show progress
+        const attachmentMoniter: Attachment = {
+            id: attachment.id,
+            name: attachment.name,
+            status: 'running'
+        };
+        addAttachment(attachmentMoniter);
+
         const formData = new FormData();
         formData.append("file", attachment.file);
         formData.append("id", attachment.id);
@@ -49,17 +62,37 @@ class FileAttachmentAdapter implements AttachmentAdapter {
                 body: formData,
             });
         } else {
+            updateAttachment(attachment.id, {
+                status: "error",
+                response: "Unsupported process type"
+            });
             throw new Error("Unsupported process type");
         }
 
         if (!res) {
+            updateAttachment(attachment.id, {
+                status: "error",
+                response: "No response from server"
+            });
             throw new Error("Failed to send attachment");
         }
     
         const data = await res.json();
         if (!data || !data.content) {
+            updateAttachment(attachment.id, {
+                status: "error",
+                response: "No content returned from server"
+            });
             throw new Error("Failed to process attachment");
         }
+
+        const completeAttachment: Attachment = {
+            ...attachment,
+            status: res.ok ? "complete" : "error",
+            response: JSON.stringify(data.content),
+        };
+        updateAttachment(attachment.id, completeAttachment);
+
     
         return {
             ...attachment,
@@ -70,6 +103,10 @@ class FileAttachmentAdapter implements AttachmentAdapter {
 
     async remove(attachment: SpecialPendingAttachment): Promise<void> {
         // Cleanup if needed
+        const { attachments, addAttachment, updateAttachment, clearAttachments, removeAttachment } = this.attachmentContext;
+
+        removeAttachment(attachment.id);
+        
         console.log(`trying Removing attachment: ${attachment.id}`);
     }
 }
