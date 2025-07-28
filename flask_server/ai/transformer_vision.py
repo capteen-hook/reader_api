@@ -10,6 +10,8 @@ import sys
 import json
 from dotenv import load_dotenv
 
+from transformers import AutoConfig
+
 load_dotenv()
 
 def replace_containerized_path(file_path):
@@ -60,9 +62,13 @@ def load_model():
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
     tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
-    print(f"Model {model_name} loaded successfully", file=sys.stderr)
-    model_i = from_transformers(tf_model, tf_processor)
+    config = AutoConfig.from_pretrained(model_name, cache_dir='/app/workdir/cache')
+    context_limit = getattr(config, "max_position_embeddings", None)
+    print(f"Model context window (max tokens): {context_limit}", file=sys.stderr)
 
+    print(f"Model {model_name} loaded successfully", file=sys.stderr)
+
+    model_i = from_transformers(tf_model, tf_processor)
     return model_i, tf_processor, device, dtype
 
 _model = None
