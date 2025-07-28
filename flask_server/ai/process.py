@@ -53,10 +53,10 @@ def process_file(file_path, schema=example_schema):
     try:
         schema = validate_form(schema)
         
-        if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp']:
-            # For image files, we can use vision processing
-            # but for now- just try and get text from it with Tika
-            return process_vision(file_path, schema)
+        # For image files, we can use vision processing or tika
+        if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp'] and os.getenv("VISION_MODE", "false").lower() == "true":
+            return process_vision(file_path, schema)                       
+                
         else:
             # For PDF files, use Tika to extract text
             text = process_tika(file_path)
