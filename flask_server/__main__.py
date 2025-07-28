@@ -61,7 +61,7 @@ def start_background_clear_thread(app):
     def run_clear_loop():
         while True:
             print("[Background] Running periodic clear...")
-            clear_old_uploads_and_tasks(app)
+            clear_old_uploads_and_tasks(app.config['UPLOAD_FOLDER'], app.config['PROCESSING_FOLDER'])
             time.sleep(2 * 3600)  # Sleep 2 hours
 
     t = threading.Thread(target=run_clear_loop, daemon=True)
