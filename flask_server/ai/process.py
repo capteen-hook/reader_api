@@ -83,13 +83,20 @@ def process_file(file_path, schema=example_schema):
             # Process the text with the prompt
             result = generator(prompt)
             try:
+                print(f"Result from generator: {result}")
+                print(f"Schema used: {schema}")
                 # Attempt to parse the result as JSON
                 return json.loads(result)
             except json.JSONDecodeError as e:
                 # Log the error and the problematic result
                 print(f"Error decoding JSON: {e}")
                 print(f"Result string: {result}")
-                raise ValueError("Failed to parse JSON from the generator output.")
+                # return an error message instead of raising an exception
+                return {
+                    "error": "Failed to parse JSON from the generator output.",
+                    "details": str(e),
+                    "result": result
+                }
     except Exception as e:
         print(f"Error processing file {file_path}: {e}")
         raise Exception(f"Error processing file {file_path}: {e}")

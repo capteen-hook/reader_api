@@ -31,6 +31,7 @@ services:
       TAVILY_API_KEY: ${TAVILY_API_KEY:-placeholder_key}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder_key}
       BASE_URL: ${BASE_URL:-}
+      VISION_MODE: ${VISION_MODE:-false}
       GPU: ${GPU:-false}
     env_file:
       - .env
@@ -69,6 +70,7 @@ services:
       TAVILY_API_KEY: ${TAVILY_API_KEY:-placeholder_key}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder_key}
       BASE_URL: ${BASE_URL:-}
+      VISION_MODE: ${VISION_MODE:-false}
       GPU: ${GPU:-false}
     env_file:
       - .env
