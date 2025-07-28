@@ -140,7 +140,7 @@ def process_vision_multiple(file_path, schema):
     
     # Convert the messages to the final prompt
     prompt = _tf_processor.apply_chat_template(
-        messages, tokenize=True, add_generation_prompt=True
+        messages, tokenize=False, add_generation_prompt=True
     )
     
     transform = transforms.Compose([
