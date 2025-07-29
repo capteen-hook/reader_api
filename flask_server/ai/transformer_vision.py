@@ -44,7 +44,7 @@ def load_model():
         # heavyweight model:
         model_name="mistral-community/pixtral-12b"
         model_class=LlavaForConditionalGeneration
-        processor_class = LlavaProcessor
+        processor_class = AutoProcessor
 
     print(f"Using model: {model_name}", file=sys.stderr, flush=True)
     if os.getenv('GPU', 'True').lower() in ['true', '1', 'yes']:
@@ -63,12 +63,12 @@ def load_model():
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
     tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
-    config = AutoConfig.from_pretrained(model_name, cache_dir='/app/workdir/cache')
-    context_limit = getattr(config, "max_position_embeddings", None)
-    # 32768
-    print(f"Model context window (max tokens): {context_limit}", file=sys.stderr, flush=True)
+    # config = AutoConfig.from_pretrained(model_name, cache_dir='/app/workdir/cache')
+    # context_limit = getattr(config, "max_position_embeddings", None)
+    # # 32768
+    # print(f"Model context window (max tokens): {context_limit}", file=sys.stderr, flush=True)
 
-    print(f"Model {model_name} loaded successfully", file=sys.stderr, flush=True)
+    # print(f"Model {model_name} loaded successfully", file=sys.stderr, flush=True)
     model_i = from_transformers(tf_model, tf_processor)
     return model_i, tf_processor, device, dtype
 
@@ -147,7 +147,7 @@ def process_vision_multiple(file_path, schema):
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": f"""Here is an image to read"""},
+                {"type": "text", "text": f"""Here is an image to parse into this format: {schema}"""},
                 {"type": "image", "image": ""},
             ],
         }
@@ -175,8 +175,7 @@ def process_vision_multiple(file_path, schema):
             
             result = page_summary_generator(
                 {"text": prompt, "images": image},
-                max_new_tokens=1024,
-                temperature=0.3,
+                max_new_tokens=1024
             )
             
             print(f"Result from generator: {result}", file=sys.stderr, flush=True)
@@ -218,7 +217,7 @@ def process_vision(file_path, schema):
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": f"""Here is an image to read: """},
+                {"type": "text", "text": f"""Here is an image to parse into this format: {schema}"""},
                 {"type": "image", "image": ""},
             ],
         }
@@ -231,21 +230,25 @@ def process_vision(file_path, schema):
         messages, tokenize=False, add_generation_prompt=True
     )
     
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.ConvertImageDtype(_dtype),
-    ])
+    # transform = transforms.Compose([
+    #     transforms.ToTensor(),
+    #     transforms.ConvertImageDtype(_dtype),
+    # ])
     
     try:
         image = Image.open(file_path)
+        
+        if os.getenv('LIGHTWEIGHT_MODE', 'True').lower() in ['true', '1', 'yes']:
+            # lightweight mode should convert to float16 with auto processor
+        else:
+            # llava processor wont automatically convert from float32 to float16
         
         print(f"Using generator prompt: {prompt}", file=sys.stderr, flush=True)
         print(f"Using generator schema: {schema}", file=sys.stderr, flush=True)
         
         result = image_summary_generator(
             {"text": prompt, "images": image},
-            max_new_tokens=1024,
-            temperature=0.3,
+            max_new_tokens=1024
         )
 
         print(f"Result from generator: {result}", file=sys.stderr, flush=True)
