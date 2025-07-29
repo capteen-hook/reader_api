@@ -32,6 +32,8 @@ def load_model():
         print("CUDA name:", torch.cuda.get_device_name(torch.cuda.current_device()), file=sys.stderr)
     except Exception as e:
         print(f"Error checking CUDA capabilities: {e}", file=sys.stderr)
+        
+    print(os.getenv("LIGHTWEIGHT_MODE", "True") + " LOADING MODEL", file=sys.stderr)
 
     if os.getenv("LIGHTWEIGHT_MODE", "True").lower() in ["true", "1", "yes"]:
         # lighter model:
