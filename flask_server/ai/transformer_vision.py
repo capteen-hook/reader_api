@@ -11,6 +11,10 @@ from dotenv import load_dotenv
 
 from transformers import AutoConfig
 
+
+from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+from transformers import LlavaForConditionalGeneration, LlavaProcessor
+
 load_dotenv()
 
 def replace_containerized_path(file_path):
@@ -31,14 +35,11 @@ def load_model():
 
     if os.getenv("LIGHTWEIGHT_MODE", "True").lower() in ["true", "1", "yes"]:
         # lighter model:
-        from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
         model_name = "Qwen/Qwen2-VL-7B-Instruct"
         model_class = Qwen2VLForConditionalGeneration
         processor_class = AutoProcessor
     else:
         # heavyweight model:
-        print("Using heavyweight model " + os.getenv("LIGHTWEIGHT_MODE", "False"), file=sys.stderr)
-        from transformers import LlavaForConditionalGeneration, LlavaProcessor
         model_name="mistral-community/pixtral-12b"
         model_class=LlavaForConditionalGeneration
         processor_class = LlavaProcessor
@@ -140,7 +141,7 @@ def process_vision_multiple(file_path, schema):
     
     # Convert the messages to the final prompt
     prompt = _tf_processor.apply_chat_template(
-        messages, tokenize=True, add_generation_prompt=True
+        messages, tokenize=False, add_generation_prompt=True
     )
     
     transform = transforms.Compose([
