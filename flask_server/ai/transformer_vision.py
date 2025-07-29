@@ -5,9 +5,15 @@ from pdf2image import convert_from_path
 from outlines import Generator, from_transformers
 import os
 import gc
-from flask_server.ai.prompts import fill_form
 import sys
+import json
 from dotenv import load_dotenv
+
+from transformers import AutoConfig
+
+
+from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+from transformers import LlavaForConditionalGeneration, LlavaProcessor
 
 load_dotenv()
 
@@ -27,15 +33,13 @@ def load_model():
     except Exception as e:
         print(f"Error checking CUDA capabilities: {e}", file=sys.stderr)
 
-    if os.getenv("LIGHTWEIGHT_MODEL", "True").lower() in ["true", "1", "yes"]:
+    if os.getenv("LIGHTWEIGHT_MODE", "True").lower() in ["true", "1", "yes"]:
         # lighter model:
-        from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
         model_name = "Qwen/Qwen2-VL-7B-Instruct"
         model_class = Qwen2VLForConditionalGeneration
         processor_class = AutoProcessor
     else:
         # heavyweight model:
-        from transformers import LlavaForConditionalGeneration, LlavaProcessor
         model_name="mistral-community/pixtral-12b"
         model_class=LlavaForConditionalGeneration
         processor_class = LlavaProcessor
@@ -47,19 +51,23 @@ def load_model():
             dtype = torch.float16
         else:
             dtype = torch.bfloat16
-        print(f"Tried GPU: {torch.cuda.is_available()}, using device: {device}, dtype: {dtype}", file=sys.stderr)
+        print(f"Tried GPU: {torch.cuda.is_available()}, using device: {device}, dtype: {dtype}, processor_kwargs: {processor_kwargs}", file=sys.stderr)
     else:
         device = torch.device("cpu")
         dtype = torch.float32
     # it will have to download the model, which might take a while.
+    processor_kwargs={"device_map": "auto"}
     model_kwargs={"device_map": "auto", "torch_dtype": dtype}
-    processor_kwargs={"device_map": "cpu"}
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
     tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
+    config = AutoConfig.from_pretrained(model_name, cache_dir='/app/workdir/cache')
+    context_limit = getattr(config, "max_position_embeddings", None)
+    # 32768
+    print(f"Model context window (max tokens): {context_limit}", file=sys.stderr)
+
     print(f"Model {model_name} loaded successfully", file=sys.stderr)
     model_i = from_transformers(tf_model, tf_processor)
-
     return model_i, tf_processor, device, dtype
 
 _model = None
@@ -116,19 +124,28 @@ def process_vision_multiple(file_path, schema):
         # file is an image
         imagenames = [file_path]
     
+    # messages = [
+    #     {
+    #         "role": "user",
+    #         "content": [
+    #             # The text you're passing to the model --
+    #             # this is where you do your standard prompting.
+    #             {"type": "text", "text": f"""
+    #                 {fill_form("Use the image", schema)}
+    #                 """
+    #             },
+
+    #             # This a placeholder, the actual image is passed in when
+    #             # we call the generator function down below.
+    #             {"type": "image", "image": ""},
+    #         ],
+    #     }
+    # ]
     messages = [
         {
             "role": "user",
             "content": [
-                # The text you're passing to the model --
-                # this is where you do your standard prompting.
-                {"type": "text", "text": f"""
-                    {fill_form("Use the image", schema)}
-                    """
-                },
-
-                # This a placeholder, the actual image is passed in when
-                # we call the generator function down below.
+                {"type": "text", "text": f"""Here is an image to read"""},
                 {"type": "image", "image": ""},
             ],
         }
@@ -151,7 +168,12 @@ def process_vision_multiple(file_path, schema):
         try:
             image = Image.open(imagename)
             
+            print(f"Using generator prompt: {prompt}", file=sys.stderr)
+            print(f"Using generator schema: {schema}", file=sys.stderr)
+            
             result = page_summary_generator({"text": prompt, "images": image})
+            
+            print(f"Result from generator: {result}", file=sys.stderr)
             
             results.append(result)
             
@@ -173,19 +195,29 @@ def process_vision(file_path, schema):
     
     _model_i, _tf_processor, _device, _dtype = get_model()
     
+    # messages = [
+    #     {
+    #         "role": "user",
+    #         "content": [
+    #             {"type": "text", "text": f"""
+    #                 {fill_form("Use the image", schema)}
+    #                 """
+    #             },
+    #             {"type": "image", "image": ""},
+    #         ],
+    #     }
+    # ]
+    
     messages = [
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": f"""
-                    {fill_form("Use the image", schema)}
-                    """
-                },
+                {"type": "text", "text": f"""Here is an image to read: """},
                 {"type": "image", "image": ""},
             ],
         }
     ]
-    print(f"Processing image {file_path} with schema {schema}", file=sys.stderr)
+    print(f"Processing image {file_path}", file=sys.stderr)
     
     image_summary_generator = Generator(_model_i, schema)
     
@@ -198,22 +230,32 @@ def process_vision(file_path, schema):
         transforms.ConvertImageDtype(_dtype),
     ])
     
-    print(f"Transform composed", file=sys.stderr)
-    
     try:
         image = Image.open(file_path)
         
-        print(f"Starting generation for image {file_path}", file=sys.stderr)
+        print(f"Using generator prompt: {prompt}", file=sys.stderr)
+        print(f"Using generator schema: {schema}", file=sys.stderr)
         
         result = image_summary_generator({"text": prompt, "images": image})
-        
-        print(f"Image processed successfully", file=sys.stderr)
-        
+
+        print(f"Result from generator: {result}", file=sys.stderr)
+       
         del image
         torch.cuda.empty_cache()
         gc.collect()
         print(f"Processed image {file_path}: {result}", file=sys.stderr)
-        return result
+        print(f"Result: {result}", file=sys.stderr)
+        print(f"Result type: {type(result)}", file=sys.stderr)
+        
+        try:
+            res = json.loads(result)
+            return res
+        except json.JSONDecodeError as e:
+            return {
+                "error": "Failed to parse JSON from the generator output.",
+                "details": str(e),
+                "result": result
+            }
     except Exception as e:
         print(f"Error processing image {file_path}: {e}")
         raise Exception(f"Error processing image {file_path}: {e}")
