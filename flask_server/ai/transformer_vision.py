@@ -242,6 +242,7 @@ def process_vision(file_path, schema):
             # lightweight mode should convert to float16 with auto processor
         else:
             # llava processor wont automatically convert from float32 to float16
+            imape = _tf_processor.image_processor(image, return_tensors="pt").to(_device, dtype=_dtype)
         
         print(f"Using generator prompt: {prompt}", file=sys.stderr, flush=True)
         print(f"Using generator schema: {schema}", file=sys.stderr, flush=True)
