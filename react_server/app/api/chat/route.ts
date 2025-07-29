@@ -15,7 +15,7 @@ const ollama = createOllama(ollamaSettings);
 
 async function weatherTool() {
   const mcpServerPath = path.resolve(
-    "node_modules/.bin/mcp-server-weather" 
+    "node_modules/.bin/mcp-server-weather"
   );
 
   const transport = new Experimental_StdioMCPTransport({
@@ -82,7 +82,7 @@ async function createMCPTools(): Promise<ToolSet> {
     return mcpTools;
   } catch (error) {
     console.error("ShipShape tool failed to load:", error)
-    
+
     const mcpTools: ToolSet = {
       ...weather,
       ...search,
@@ -102,45 +102,50 @@ async function getMcpTools() {
 }
 
 export async function POST(req: Request) {
-  const res = await req.json();
-  console.log("Received req:", res);
-  const { messages, system, tools } = res
-  console.log("Received request with messages:", messages);
-  console.log("System prompt:", system);
-  console.log("Tools:", tools);
-  if (!tools) {
-    const result = streamText({
-      model: ollama(process.env.MODEL_NAME || "qwen3:8b"),
-      messages,
-      // forward system prompt from the frontend
-      system,
-      toolCallStreaming: false,
-      onError: console.log,
-    });
-    
-    return result.toDataStreamResponse();
+  try {
+    const res = await req.json();
+    console.log("Received req:", res);
+    const { messages, system, tools } = res
+    console.log("Received request with messages:", messages);
+    console.log("System prompt:", system);
+    console.log("Tools:", tools);
+    if (!tools) {
+      const result = streamText({
+        model: ollama(process.env.MODEL_NAME || "qwen3:8b"),
+        messages,
+        // forward system prompt from the frontend
+        system,
+        toolCallStreaming: false,
+        onError: console.log,
+      });
 
-  } else {
-    const this_mcpTools = await getMcpTools();
+      return result.toDataStreamResponse();
 
-    // console.log("Received messages:");
-    // for (const message of messages) {
-    //   console.log(`- ${message.role}: ${Object.keys(message.content)}`);
-    // }
+    } else {
+      const this_mcpTools = await getMcpTools();
 
-    const result = streamText({
-      model: ollama(process.env.MODEL_NAME || "qwen3:8b"),
-      messages,
-      // forward system prompt and tools from the frontend
-      toolCallStreaming: true,
-      system,
-      tools: {
-        ...frontendTools(tools),
-        ...this_mcpTools,
-      },
-      onError: console.log,
-    });
+      // console.log("Received messages:");
+      // for (const message of messages) {
+      //   console.log(`- ${message.role}: ${Object.keys(message.content)}`);
+      // }
 
-    return result.toDataStreamResponse();
+      const result = streamText({
+        model: ollama(process.env.MODEL_NAME || "qwen3:8b"),
+        messages,
+        // forward system prompt and tools from the frontend
+        toolCallStreaming: true,
+        system,
+        tools: {
+          ...frontendTools(tools),
+          ...this_mcpTools,
+        },
+        onError: console.log,
+      });
+
+      return result.toDataStreamResponse();
+    }
+  } catch (error) {
+    console.error("Error in POST /chat:", error);
+    return new Response(`Error processing file: ${error}`, { status: 500 });
   }
 }

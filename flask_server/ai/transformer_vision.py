@@ -194,7 +194,7 @@ def process_vision(file_path, schema):
     image_summary_generator = Generator(_model_i, schema)
     
     prompt = _tf_processor.apply_chat_template(
-        messages, tokenize=True, add_generation_prompt=True
+        messages, tokenize=False, add_generation_prompt=True
     )
     
     transform = transforms.Compose([
