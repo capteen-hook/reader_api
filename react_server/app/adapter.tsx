@@ -46,27 +46,35 @@ class FileAttachmentAdapter implements AttachmentAdapter {
     
         let res: Response;
         console.log(`Sending attachment: ${attachment.id}, processType: ${attachment.file.processType}`);
-        if (attachment.file.processType === "file") {
-            res = await fetch("/api/file", {
-                method: "POST",
-                body: formData, 
-            });
-        } else if (attachment.file.processType === "report") {
-            res = await fetch("/api/report", {
-                method: "POST",
-                body: formData,
-            });
-        } else if (attachment.file.processType === "appliance") {
-            res = await fetch("/api/appliance", {
-                method: "POST",
-                body: formData,
-            });
-        } else {
+        try {
+            if (attachment.file.processType === "file") {
+                res = await fetch("/api/file", {
+                    method: "POST",
+                    body: formData, 
+                });
+            } else if (attachment.file.processType === "report") {
+                res = await fetch("/api/report", {
+                    method: "POST",
+                    body: formData,
+                });
+            } else if (attachment.file.processType === "appliance") {
+                res = await fetch("/api/appliance", {
+                    method: "POST",
+                    body: formData,
+                });
+            } else {
+                updateAttachment(attachment.id, {
+                    status: "error",
+                    response: "Unsupported process type"
+                });
+                throw new Error("Unsupported process type");
+            }
+        } catch (error) {
             updateAttachment(attachment.id, {
                 status: "error",
-                response: "Unsupported process type"
+                response: error instanceof Error ? error.message : "Unknown error"
             });
-            throw new Error("Unsupported process type");
+            throw new Error(`Failed to send attachment: ${error}`);
         }
 
         if (!res) {
