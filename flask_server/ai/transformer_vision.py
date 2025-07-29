@@ -217,7 +217,7 @@ def process_vision(file_path, schema):
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": f"""Here is an image to parse into this format: {schema}"""},
+                {"type": "text", "text": f"""Extract out information from the appliance manufacturer plate in this image. Find the type of appliance (e.g. "water heater", "dishwasher", "hvac", etc.) and fill out its serial number, model number, and manufacturer."""},
                 {"type": "image", "image": ""},
             ],
         }
