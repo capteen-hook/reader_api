@@ -44,7 +44,7 @@ def load_model():
         # heavyweight model:
         model_name="mistral-community/pixtral-12b"
         model_class=LlavaForConditionalGeneration
-        processor_class = AutoProcessor
+        processor_class = LlavaProcessor
 
     print(f"Using model: {model_name}", file=sys.stderr, flush=True)
     if os.getenv('GPU', 'True').lower() in ['true', '1', 'yes']:
@@ -68,7 +68,7 @@ def load_model():
     # # 32768
     # print(f"Model context window (max tokens): {context_limit}", file=sys.stderr, flush=True)
 
-    # print(f"Model {model_name} loaded successfully", file=sys.stderr, flush=True)
+    print(f"Model {model_name} loaded successfully", file=sys.stderr, flush=True)
     model_i = from_transformers(tf_model, tf_processor)
     return model_i, tf_processor, device, dtype
 
@@ -157,13 +157,13 @@ def process_vision_multiple(file_path, schema):
     
     # Convert the messages to the final prompt
     prompt = _tf_processor.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
+        messages, tokenize=False, add_generation_prompt=True, 
+    ).to(_device, dtype=_dtype)
     
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.ConvertImageDtype(_dtype),
-    ])
+    # transform = transforms.Compose([
+    #     transforms.ToTensor(),
+    #     transforms.ConvertImageDtype(_dtype),
+    # ])
     
     results = []
     for imagename in imagenames:
