@@ -53,7 +53,7 @@ def load_model():
             dtype = torch.float16
         else:
             dtype = torch.bfloat16
-        print(f"Tried GPU: {torch.cuda.is_available()}, using device: {device}, dtype: {dtype}, processor_kwargs: {processor_kwargs}", file=sys.stderr, flush=True)
+        print(f"Tried GPU: {torch.cuda.is_available()}, using device: {device}, dtype: {dtype}", file=sys.stderr, flush=True)
     else:
         device = torch.device("cpu")
         dtype = torch.float32
