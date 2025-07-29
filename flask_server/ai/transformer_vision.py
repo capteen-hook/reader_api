@@ -249,8 +249,10 @@ def process_vision(file_path, schema):
         
         try:
             res = json.loads(result)
+            print(f"Parsed JSON from generator output: {res}", file=sys.stderr)
             return res
         except json.JSONDecodeError as e:
+            print(f"Failed to parse JSON from the generator output: {e}", file=sys.stderr)
             return {
                 "error": "Failed to parse JSON from the generator output.",
                 "details": str(e),
