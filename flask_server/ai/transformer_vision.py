@@ -50,9 +50,9 @@ def load_model():
     if os.getenv('GPU', 'True').lower() in ['true', '1', 'yes']:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 7:
-            dtype = torch.float16
+            dtype = torch.float32 
         else:
-            dtype = torch.bfloat16
+            dtype = torch.float32 
         print(f"Tried GPU: {torch.cuda.is_available()}, using device: {device}, dtype: {dtype}", file=sys.stderr, flush=True)
     else:
         device = torch.device("cpu")
@@ -63,10 +63,10 @@ def load_model():
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
     tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
-    # config = AutoConfig.from_pretrained(model_name, cache_dir='/app/workdir/cache')
-    # context_limit = getattr(config, "max_position_embeddings", None)
-    # # 32768
-    # print(f"Model context window (max tokens): {context_limit}", file=sys.stderr, flush=True)
+    config = AutoConfig.from_pretrained(model_name, cache_dir='/app/workdir/cache')
+    context_limit = getattr(config, "max_position_embeddings", None)
+    # 32768
+    print(f"Model context window (max tokens): {context_limit}", file=sys.stderr, flush=True)
 
     print(f"Model {model_name} loaded successfully", file=sys.stderr, flush=True)
     model_i = from_transformers(tf_model, tf_processor)
@@ -157,13 +157,13 @@ def process_vision_multiple(file_path, schema):
     
     # Convert the messages to the final prompt
     prompt = _tf_processor.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True, 
-    ).to(_device, dtype=_dtype)
+        messages, tokenize=False, add_generation_prompt=True
+    )
     
-    # transform = transforms.Compose([
-    #     transforms.ToTensor(),
-    #     transforms.ConvertImageDtype(_dtype),
-    # ])
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.ConvertImageDtype(_dtype),
+    ])
     
     results = []
     for imagename in imagenames:
@@ -238,11 +238,7 @@ def process_vision(file_path, schema):
     try:
         image = Image.open(file_path)
         
-        if os.getenv('LIGHTWEIGHT_MODE', 'True').lower() in ['true', '1', 'yes']:
-            # lightweight mode should convert to float16 with auto processor
-        else:
-            # llava processor wont automatically convert from float32 to float16
-            imape = _tf_processor.image_processor(image, return_tensors="pt").to(_device, dtype=_dtype)
+        
         
         print(f"Using generator prompt: {prompt}", file=sys.stderr, flush=True)
         print(f"Using generator schema: {schema}", file=sys.stderr, flush=True)
