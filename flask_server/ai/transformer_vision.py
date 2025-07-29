@@ -127,7 +127,6 @@ def process_vision_multiple(file_path, schema):
         imagenames = [file_path]
     
     messages = [
-        { "role": "system", "content": "You are a information extraction assistant, fill out this form as completely as possible: " + schema },
         {
             "role": "user",
             "content": [
@@ -182,7 +181,6 @@ def process_vision(file_path, schema):
     _model_i, _tf_processor, _device, _dtype = get_model()
     
     messages = [
-        { "role": "system", "content": "You are a information extraction assistant, fill out this form as completely as possible: " + schema },
         {
             "role": "user",
             "content": [
