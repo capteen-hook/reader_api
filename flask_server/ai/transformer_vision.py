@@ -171,7 +171,11 @@ def process_vision_multiple(file_path, schema):
             print(f"Using generator prompt: {prompt}", file=sys.stderr)
             print(f"Using generator schema: {schema}", file=sys.stderr)
             
-            result = page_summary_generator({"text": prompt, "images": image})
+            result = page_summary_generator(
+                {"text": prompt, "images": image},
+                max_new_tokens=1024,
+                temperature=0.3,
+            )
             
             print(f"Result from generator: {result}", file=sys.stderr)
             
@@ -236,7 +240,11 @@ def process_vision(file_path, schema):
         print(f"Using generator prompt: {prompt}", file=sys.stderr)
         print(f"Using generator schema: {schema}", file=sys.stderr)
         
-        result = image_summary_generator({"text": prompt, "images": image})
+        result = image_summary_generator(
+            {"text": prompt, "images": image},
+            max_new_tokens=1024,
+            temperature=0.3,
+        )
 
         print(f"Result from generator: {result}", file=sys.stderr)
        
