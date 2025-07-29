@@ -59,7 +59,7 @@ def load_model():
     # it will have to download the model, which might take a while.
     model_kwargs={"device_map": "auto", "torch_dtype": dtype}
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
-    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=False)
+    tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
     config = AutoConfig.from_pretrained(model_name, cache_dir='/app/workdir/cache')
     context_limit = getattr(config, "max_position_embeddings", None)
@@ -140,7 +140,7 @@ def process_vision_multiple(file_path, schema):
     
     # Convert the messages to the final prompt
     prompt = _tf_processor.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
+        messages, tokenize=True, add_generation_prompt=True
     )
     
     transform = transforms.Compose([
@@ -197,9 +197,6 @@ def process_vision(file_path, schema):
     prompt = _tf_processor.apply_chat_template(
         messages, tokenize=True, add_generation_prompt=True
     )
-    
-    # context length
-    print(f"Prompt token length: {len(_tf_processor.tokenizer(prompt)['input_ids'])}", file=sys.stderr)
     
     transform = transforms.Compose([
         transforms.ToTensor(),
