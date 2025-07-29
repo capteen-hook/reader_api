@@ -130,7 +130,7 @@ def process_vision_multiple(file_path, schema):
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": "Here is an image:"},
+                {"type": "text", "text": f"""Here is an image to read"""},
                 {"type": "image", "image": ""},
             ],
         }
@@ -184,7 +184,7 @@ def process_vision(file_path, schema):
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": "Here is an image:"},
+                {"type": "text", "text": f"""Here is an image to read: """},
                 {"type": "image", "image": ""},
             ],
         }
