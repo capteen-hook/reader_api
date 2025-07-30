@@ -9,7 +9,7 @@ load_dotenv()
 from flask_server.tools.web_search import search_tavily
 from flask_server.ai.prompts import fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema
 from flask_server.test_page import homePage
-from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
+from flask_server.tools.utils import validate_file, verify_jwt, upload_file
 from flask_server.ai.process import process_tika, process_plaintext, home_loop, process_file
 from flask_server.ai.transformer_vision import process_vision
     
