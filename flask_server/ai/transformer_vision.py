@@ -13,16 +13,11 @@ from transformers import AutoConfig
 
 
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
-from transformers import LlavaForConditionalGeneration, LlavaProcessor
+# from transformers import LlavaForConditionalGeneration, LlavaProcessor
+
+from flask_server.ai.prompts import default_appliance_form, default_home_form
 
 load_dotenv()
-
-def replace_containerized_path(file_path):
-    this = '/app/workdir/'
-    with_this = '/home/liam/reader_api/workdir/'
-    if file_path.startswith(this):
-        file_path = file_path.replace(this, with_this)
-    return file_path
 
 def load_model():
     print("CUDA available:", torch.cuda.is_available(), file=sys.stderr, flush=True)
@@ -33,24 +28,14 @@ def load_model():
     except Exception as e:
         print(f"Error checking CUDA capabilities: {e}", file=sys.stderr, flush=True)
         
-    print(os.getenv("LIGHTWEIGHT_MODE", "True") + " LOADING MODEL", file=sys.stderr, flush=True)
-
-    if os.getenv("LIGHTWEIGHT_MODE", "True").lower() in ["true", "1", "yes"]:
-        # lighter model:
-        model_name = "Qwen/Qwen2-VL-7B-Instruct"
-        model_class = Qwen2VLForConditionalGeneration
-        processor_class = AutoProcessor
-    else:
-        # heavyweight model:
-        model_name="mistral-community/pixtral-12b"
-        model_class=LlavaForConditionalGeneration
-        processor_class = LlavaProcessor
-
-    print(f"Using model: {model_name}", file=sys.stderr, flush=True)
+    model_name = "Qwen/Qwen2-VL-7B-Instruct"
+    model_class = Qwen2VLForConditionalGeneration
+    processor_class = AutoProcessor
+    
     if os.getenv('GPU', 'True').lower() in ['true', '1', 'yes']:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 7:
-            dtype = torch.float32 
+            dtype = torch.float16
         else:
             dtype = torch.float32 
         print(f"Tried GPU: {torch.cuda.is_available()}, using device: {device}, dtype: {dtype}", file=sys.stderr, flush=True)
@@ -63,13 +48,9 @@ def load_model():
     tf_model = model_class.from_pretrained(model_name, **model_kwargs, cache_dir='/app/workdir/cache')
     tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs, cache_dir='/app/workdir/cache', use_fast=True)
 
-    config = AutoConfig.from_pretrained(model_name, cache_dir='/app/workdir/cache')
-    context_limit = getattr(config, "max_position_embeddings", None)
-    # 32768
-    print(f"Model context window (max tokens): {context_limit}", file=sys.stderr, flush=True)
-
     print(f"Model {model_name} loaded successfully", file=sys.stderr, flush=True)
     model_i = from_transformers(tf_model, tf_processor)
+    
     return model_i, tf_processor, device, dtype
 
 _model = None
@@ -115,39 +96,23 @@ def convert_pdf_to_images(pdf_path, output_dir, dpi=120, fmt='PNG'):
     return imagenames
 
 def process_vision_multiple(file_path, schema):
-    #file_path = replace_containerized_path(file_path)
     
     _model_i, _tf_processor, _device, _dtype = get_model()
 
     if file_path.lower().endswith('.pdf'):
-        # conver to list of images
         imagenames = convert_pdf_to_images(file_path, output_dir='/app/workdir/processing')
     else:
-        # file is an image
         imagenames = [file_path]
     
-    # messages = [
-    #     {
-    #         "role": "user",
-    #         "content": [
-    #             # The text you're passing to the model --
-    #             # this is where you do your standard prompting.
-    #             {"type": "text", "text": f"""
-    #                 {fill_form("Use the image", schema)}
-    #                 """
-    #             },
-
-    #             # This a placeholder, the actual image is passed in when
-    #             # we call the generator function down below.
-    #             {"type": "image", "image": ""},
-    #         ],
-    #     }
-    # ]
     messages = [
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": f"""Here is an image to parse into this format: {schema}"""},
+                {"type": "text", "text": f"""
+                        You are an AI assistant that summarizes images. Use the image to fill this form:
+                        {default_home_form}
+                    """
+                },
                 {"type": "image", "image": ""},
             ],
         }
@@ -155,23 +120,14 @@ def process_vision_multiple(file_path, schema):
     
     page_summary_generator = Generator(_model_i, schema)
     
-    # Convert the messages to the final prompt
     prompt = _tf_processor.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
     )
-    
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.ConvertImageDtype(_dtype),
-    ])
     
     results = []
     for imagename in imagenames:
         try:
             image = Image.open(imagename)
-            
-            print(f"Using generator prompt: {prompt}", file=sys.stderr, flush=True)
-            print(f"Using generator schema: {schema}", file=sys.stderr, flush=True)
             
             result = page_summary_generator(
                 {"text": prompt, "images": image},
@@ -182,8 +138,6 @@ def process_vision_multiple(file_path, schema):
             
             results.append(result)
             
-            # Free up memory
-            del image_tensor
             del image
             torch.cuda.empty_cache()
             gc.collect()
@@ -194,30 +148,21 @@ def process_vision_multiple(file_path, schema):
     return results
 
 def process_vision(file_path, schema):
-    #file_path = replace_containerized_path(file_path)
-    # replace the containerized file path with the actual file path
     
     
     _model_i, _tf_processor, _device, _dtype = get_model()
-    
-    # messages = [
-    #     {
-    #         "role": "user",
-    #         "content": [
-    #             {"type": "text", "text": f"""
-    #                 {fill_form("Use the image", schema)}
-    #                 """
-    #             },
-    #             {"type": "image", "image": ""},
-    #         ],
-    #     }
     # ]
+    
     
     messages = [
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": f"""Extract out information from the appliance manufacturer plate in this image. Find the type of appliance (e.g. "water heater", "dishwasher", "hvac", etc.) and fill out its serial number, model number, and manufacturer."""},
+                {"type": "text", "text": f"""
+                        You are an AI assistant that summarizes images. Use the image to fill this form:
+                        {default_appliance_form}
+                    """
+                },
                 {"type": "image", "image": ""},
             ],
         }

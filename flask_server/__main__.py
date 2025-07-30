@@ -4,6 +4,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from outlines import from_ollama, Generator
+from outlines.types import JsonSchema
 import ollama
 import gc
 from bs4 import BeautifulSoup
@@ -19,7 +20,7 @@ from celery import Celery
 from flask_server.tools.web_search import search_tavily
 from flask_server.ai.prompts import fill_form, fill_home_form, fill_home_form_forward, fill_home_form_websearch, fill_appliance_form, default_home_form, default_appliance_form, example_schema
 from flask_server.test_page import homePage
-from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
+from flask_server.tools.utils import validate_file, verify_jwt, upload_file
 from flask_server.ai.process import process_tika, chat #, process_plaintext, home_loop, process_file
 from flask_server.celery import celery
 from flask_server.tasks import process_file_task, process_home_task, process_plaintext_task, queue_full, process_vision_task
@@ -99,6 +100,7 @@ def create_app(app):
 
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', example_schema)
+            schema = JsonSchema(schema)
             
             print(f"Creating task: {file_path}", file=sys.stderr)
             
@@ -119,6 +121,7 @@ def create_app(app):
 
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', default_home_form)
+            schema = JsonSchema(schema)
             
             id = process_home_task.apply_async(args=[file_path, schema])
             return jsonify({"task_id": id.id}), 200
@@ -136,6 +139,7 @@ def create_app(app):
             
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', default_appliance_form)
+            schema = JsonSchema(schema)
             # WIP!
             if os.getenv("VISION_MODE", "false").lower() == "true":
                 print("Vision mode enabled, using vision processing", file=sys.stderr)
@@ -173,7 +177,7 @@ def create_app(app):
     def plaintext_process():
         try:
            
-            text = process_plaintext_task(request.json.get('message', ''), request.json.get('form', example_schema))
+            text = process_plaintext_task(request.json.get('message', ''), request.json.get('form', JsonSchema(example_schema)))
             return jsonify(text), 200
         except ValueError as ve:
             print(f"Value error: {ve}", file=sys.stderr)
@@ -236,7 +240,7 @@ def create_app(app):
         
     @app.route(BASE_URL + '/', methods=['GET'])
     def index():
-        return homePage(default_home_form, default_appliance_form, example_schema)
+        return homePage(default_home_form, default_appliance_form, JsonSchema(example_schema))
 
     @app.route(BASE_URL + '/docs', methods=['GET'])
     def docs():

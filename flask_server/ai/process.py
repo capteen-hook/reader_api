@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import ollama
 from outlines import from_ollama, Generator
 from flask_server.ai.prompts import example_schema, fill_form, fill_home_form_forward, fill_home_form_websearch, default_home_form, default_appliance_form
-from flask_server.tools.utils import validate_file, validate_form, verify_jwt, upload_file
+from flask_server.tools.utils import validate_file, verify_jwt, upload_file
 from flask_server.tools.web_search import search_tavily
 from flask_server.ai.transformer_vision import process_vision
 import sys
@@ -51,8 +51,6 @@ def process_file(file_path, schema=example_schema):
     _model, _client = get_model()
     
     try:
-        schema = validate_form(schema)
-        
         # For image files, we can use vision processing or tika
         if file_path.split('.')[-1].lower() in ['jpg', 'jpeg', 'png', 'webp'] and os.getenv("VISION_MODE", "false").lower() == "true":
             return process_vision(file_path, schema)                       
@@ -96,7 +94,6 @@ def process_file(file_path, schema=example_schema):
         raise Exception(f"Error processing file {file_path}: {e}")
 
 def home_loop(text, schema):
-    schemaF = validate_form(schema)
     
     # home inspection reports can be quite long, so we need to split them into chunks
     chunksize = 10000
@@ -175,8 +172,6 @@ def process_tika(file_path):
     
 def process_plaintext(text, schema, prompt=None):
     _model, _client = get_model()
-    
-    schema = validate_form(schema)
     
     if prompt is None:
         prompt = fill_form(text, schema)

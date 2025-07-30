@@ -33,23 +33,6 @@ def validate_file(filename):
     except Exception as e:
         print(f"Error validating file: {e}")
         raise Exception("Error validating file")
-    
-def validate_form(form_data):
-    try:
-        
-        # if form_data is a string, parse it as JSON
-        if isinstance(form_data, str):
-            import json
-            form_data = json.loads(form_data)
-            
-        
-        # Validate form data against the schema
-        schema = JsonSchema(form_data)
-        # If validation passes, return the schema
-        return schema
-    except Exception as e:
-        print(f"Error validating form data: {e}")
-        raise ValueError("Invalid form data")
         
 def verify_jwt(token):
     try:
