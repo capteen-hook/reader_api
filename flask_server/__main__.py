@@ -240,7 +240,7 @@ def create_app(app):
         
     @app.route(BASE_URL + '/', methods=['GET'])
     def index():
-        return homePage(default_home_form, default_appliance_form, json.loads(example_schema))
+        return homePage(default_home_form, default_appliance_form, example_schema)
     
     @app.route(BASE_URL + '/docs', methods=['GET'])
     def docs():
