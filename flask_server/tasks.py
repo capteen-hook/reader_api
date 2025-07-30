@@ -12,31 +12,34 @@ from flask_server.test_page import homePage
 from flask_server.tools.utils import validate_file, verify_jwt, upload_file
 from flask_server.ai.process import process_tika, process_plaintext, home_loop, process_file
 from flask_server.ai.transformer_vision import process_vision
-    
+   
+from outlines.types import JsonSchema 
 
 # Set a task queue limit
 MAX_TASKS = int(os.getenv('MAX_TASKS', 30))
 
 @celery.task
 def process_file_task(file_path, schema=example_schema):
-    print(f"Processing file task: {file_path}", file=sys.stderr)
+    schema = JsonSchema(schema)
     processed_content = process_file(file_path, schema)
     return processed_content
     
 @celery.task
 def process_home_task(file_path, schema=default_home_form):
+    schema = JsonSchema(schema)
     text = process_tika(file_path)
     content = home_loop(text, schema)
     return content
 
 @celery.task
 def process_plaintext_task(file_path, schema=example_schema):
+    schema = JsonSchema(schema)
     content = process_plaintext(file_path, schema)
     return content
 
 @celery.task
 def process_vision_task(file_path, schema=default_appliance_form):
-    print(f"Processing vision task for file: {file_path}", file=sys.stderr)
+    schema = JsonSchema(schema)
     content = process_vision(file_path, schema)
     return content
 

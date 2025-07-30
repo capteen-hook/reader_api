@@ -4,7 +4,6 @@ import requests
 import os
 from dotenv import load_dotenv
 from outlines import from_ollama, Generator
-from outlines.types import JsonSchema
 import ollama
 import gc
 from bs4 import BeautifulSoup
@@ -100,7 +99,6 @@ def create_app(app):
 
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', example_schema)
-            schema = JsonSchema(schema)
             
             print(f"Creating task: {file_path}", file=sys.stderr)
             
@@ -121,7 +119,7 @@ def create_app(app):
 
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', default_home_form)
-            schema = JsonSchema(schema)
+    
             
             id = process_home_task.apply_async(args=[file_path, schema])
             return jsonify({"task_id": id.id}), 200
@@ -139,7 +137,7 @@ def create_app(app):
             
             file_path = upload_file(request.files.get('file'))
             schema = request.form.get('form', default_appliance_form)
-            schema = JsonSchema(schema)
+            
             # WIP!
             if os.getenv("VISION_MODE", "false").lower() == "true":
                 print("Vision mode enabled, using vision processing", file=sys.stderr)
@@ -178,7 +176,7 @@ def create_app(app):
     def plaintext_process():
         try:
            
-            text = process_plaintext_task(request.json.get('message', ''), request.json.get('form', JsonSchema(example_schema)))
+            text = process_plaintext_task(request.json.get('message', ''), request.json.get('form', example_schema))
             return jsonify(text), 200
         except ValueError as ve:
             print(f"Value error: {ve}", file=sys.stderr)
