@@ -148,10 +148,11 @@ def create_app(app):
                 print("Vision mode disabled, using file processing", file=sys.stderr)
                 id = process_file_task.apply_async(args=[file_path, schema])
                 
+            print(f"Enqueued appliance photo processing task with ID: {id.id}", file=sys.stderr)
             return jsonify({"task_id": id.id}), 200
 
         except Exception as e:
-            print(f"Error enqueuing appliance photo processing task: {e}")
+            print(f"Error enqueuing appliance photo processing task: {e}", file=sys.stderr)
             return jsonify({"error": str(e)}), 500
         
     @app.route(BASE_URL + '/process/ocr', methods=['POST']) 
